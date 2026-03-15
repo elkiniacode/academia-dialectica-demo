@@ -4,6 +4,7 @@ import { useState, useCallback, useEffect, useLayoutEffect, useRef } from "react
 import Image from "next/image";
 import Link from "next/link";
 import { NeuronCanvas } from "./neuron-canvas";
+import { SpriteAnimator } from "../sprite-animator";
 import { createLead } from "@/lib/actions/lead-actions";
 
 const PALETTE_NAMES = ["Cian", "Púrpura", "Verde Azulado", "Azul", "Rosa"];
@@ -184,6 +185,29 @@ export function HeroSection() {
             presenciales y online para todos los niveles, desde colegio hasta
             universidad.
           </p>
+          {/* Character showcase */}
+          <div className="flex justify-center gap-6 md:gap-10 mb-12">
+            {["guerrero", "mago", "explorador"].map((cls) => (
+              <div key={cls} className="flex flex-col items-center group">
+                <div className="p-2 rounded-full bg-blue-500/10 animate-character-glow transition-transform group-hover:scale-110">
+                  <SpriteAnimator
+                    src={`/characters/${cls}/idle.png`}
+                    frameWidth={256}
+                    frameHeight={256}
+                    frameCount={4}
+                    displayWidth={80}
+                    displayHeight={80}
+                    duration={0.8}
+                    alt={cls}
+                  />
+                </div>
+                <span className="text-xs font-bold text-blue-300 mt-3 tracking-widest uppercase opacity-80">
+                  {cls}
+                </span>
+              </div>
+            ))}
+          </div>
+
           <div className="flex flex-col sm:flex-row gap-4 justify-center pointer-events-auto">
             <Link
               href="/login"

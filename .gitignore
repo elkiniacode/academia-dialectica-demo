@@ -30,3 +30,11 @@ next-env.d.ts
 
 # prisma
 prisma/*.db
+
+
+# AI Coding Assistants
+.claude/
+.cursor/
+
+# Vercel deployment
+.vercel/

@@ -91,10 +91,13 @@ export const authConfig = {
         }
 
         if (account.provider === "credentials") {
+          const u = user as { role: string; characterClass?: string | null; level?: number };
           return {
             ...token,
-            role: (user as { role: string }).role,
+            role: u.role,
             userId: user.id,
+            characterClass: u.characterClass ?? undefined,
+            level: u.level,
           };
         }
       }
@@ -118,6 +121,8 @@ export const authConfig = {
       session.accessToken = token.accessToken as string;
       session.role = token.role as string;
       session.userId = token.userId as string;
+      session.characterClass = token.characterClass as string | undefined;
+      session.level = token.level as number | undefined;
       if (token.error) {
         (session as { error?: string }).error = token.error as string;
       }

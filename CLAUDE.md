@@ -173,6 +173,23 @@ See [project_gamification.md](memory/project_gamification.md) for full details.
 - Admin panel: `components/admin-gamification-panel.tsx` — full-width at top of `/admin/clients/[id]`, HP/XP adjustment form
 - Character info badge shown in admin client header when set
 
+## Spritesheet Character Animation & Companion
+
+See [14_implementation.md](memory/14_implementation.md) for full details.
+
+- `SpriteAnimator` component: CSS `steps()` + `background-position` for frame-by-frame horizontal spritesheet animation
+- Scoped `@keyframes` via `useId()`, `imageRendering: pixelated` for crisp pixel art, `isMounted` guard in preload `useEffect`
+- `CharacterAvatar` extended with `variant` (default/idle/companion), `size` (sm/md/lg), `animated` props
+- Three-stage waterfall fallback: Animated Sprite → Static PNG (`level-N.png`) → Colored letter-avatar
+- Spritesheet config: `frameWidth: 256, frameHeight: 256, frameCount: 4, duration: 0.8` (adjustable in `character-avatar.tsx`)
+- Image assets: `public/characters/{class}/idle.png` (horizontal spritesheet), `level-N.png` (static fallback)
+- Floating companion on all `/client/*` pages: `components/character-companion.tsx`, fixed bottom-right, localStorage toggle
+- Companion mounted in `app/client/layout.tsx` via server-side `auth()` props (no `useSession` needed)
+- CSS animations in `globals.css`: `companion-bob` (3s float), `character-glow` (2s glow pulse)
+- Session extended with `characterClass`/`level` in JWT + session callbacks (`auth.config.ts`, `next-auth.d.ts`)
+- Welcome page: 3 character class sprites with glow wrappers in `hero-section.tsx`, hidden during game mode
+- Components: `components/sprite-animator.tsx`, `components/character-avatar.tsx`, `components/character-companion.tsx`
+
 ## Docker & Deployment
 
 - `Dockerfile` and `.dockerignore` are configured for Next.js standalone output

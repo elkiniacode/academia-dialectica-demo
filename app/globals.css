@@ -1,1 +1,19 @@
 @import "tailwindcss";
+
+/* Companion floating bob — layers on top of spritesheet frame animation */
+@keyframes companion-bob {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-4px); }
+}
+.animate-companion-bob {
+  animation: companion-bob 3s ease-in-out infinite;
+}
+
+/* Glow pulse for dashboard idle character */
+@keyframes character-glow {
+  0%, 100% { filter: drop-shadow(0 0 6px rgba(99, 102, 241, 0.2)); }
+  50% { filter: drop-shadow(0 0 14px rgba(99, 102, 241, 0.5)); }
+}
+.animate-character-glow {
+  animation: character-glow 2s ease-in-out infinite;
+}

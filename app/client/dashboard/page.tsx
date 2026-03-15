@@ -34,10 +34,15 @@ export default async function ClientDashboard() {
       ) : (
         <section className="bg-white rounded-lg shadow p-6 border border-gray-100">
           <div className="flex items-center gap-6 flex-wrap">
-            <CharacterAvatar
-              characterClass={client.characterClass!}
-              level={client.level}
-            />
+            <div className="relative flex items-center justify-center animate-character-glow">
+              <CharacterAvatar
+                characterClass={client.characterClass!}
+                level={client.level}
+                variant="idle"
+                size="lg"
+                animated
+              />
+            </div>
             <div className="flex-1 min-w-[200px] space-y-3">
               <div>
                 <h2 className="text-xl font-bold text-gray-800">
