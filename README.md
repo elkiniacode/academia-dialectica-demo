@@ -1,6 +1,6 @@
 # Academia Dialectica
 
-Plataforma integral de gestion academica y marketing para Academia Dialectica (Bogota, Colombia). Combina un sitio publico interactivo, un portal administrativo y un portal estudiantil con gamificacion RPG.
+Plataforma integral de gestion economica, academica y marketing para Academia Dialectica (Bogota, Colombia). Combina un sitio publico interactivo, un portal administrativo, un portal estudiantil con gamificacion RPG y landing page con gamificacion para fidelizacion de clientes. Permite realizar una contabilidad y analisis economico completo de la empresa para tomar decisiones basadas en data.
 
 ## Stack Tecnologico
 
