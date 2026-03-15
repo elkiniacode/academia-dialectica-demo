@@ -6,19 +6,25 @@ import {
   buildTemplate,
 } from "@/lib/telegram";
 
-const ALLOWED_USER_ID = process.env.TELEGRAM_ALLOWED_USER_ID
-  ? parseInt(process.env.TELEGRAM_ALLOWED_USER_ID)
-  : null;
+// Fail fast: crash on startup if security env vars are missing
+if (!process.env.TELEGRAM_ALLOWED_USER_ID) {
+  throw new Error("TELEGRAM_ALLOWED_USER_ID is missing from .env!");
+}
+if (!process.env.TELEGRAM_WEBHOOK_SECRET) {
+  throw new Error("TELEGRAM_WEBHOOK_SECRET is missing from .env!");
+}
 
-const WEBHOOK_SECRET = process.env.TELEGRAM_WEBHOOK_SECRET || null;
+const ALLOWED_USER_ID = parseInt(process.env.TELEGRAM_ALLOWED_USER_ID);
+if (isNaN(ALLOWED_USER_ID)) {
+  throw new Error("TELEGRAM_ALLOWED_USER_ID must be a valid number!");
+}
+const WEBHOOK_SECRET = process.env.TELEGRAM_WEBHOOK_SECRET;
 
 export async function POST(req: Request) {
   // Verify Telegram secret token header (set via setWebhook?secret_token=...)
-  if (WEBHOOK_SECRET) {
-    const headerSecret = req.headers.get("x-telegram-bot-api-secret-token");
-    if (headerSecret !== WEBHOOK_SECRET) {
-      return NextResponse.json({ ok: false }, { status: 403 });
-    }
+  const headerSecret = req.headers.get("x-telegram-bot-api-secret-token");
+  if (headerSecret !== WEBHOOK_SECRET) {
+    return NextResponse.json({ ok: false }, { status: 403 });
   }
 
   const body = await req.json();
@@ -33,7 +39,7 @@ export async function POST(req: Request) {
   const text: string = message.text.trim();
 
   // Restrict to allowed user
-  if (ALLOWED_USER_ID && userId !== ALLOWED_USER_ID) {
+  if (userId !== ALLOWED_USER_ID) {
     await sendTelegramMessage(chatId, "No autorizado.");
     return NextResponse.json({ ok: true });
   }

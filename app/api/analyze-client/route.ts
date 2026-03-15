@@ -36,7 +36,7 @@ Solo devuelve el JSON sin ningún texto adicional, sin bloques de código markdo
 
 export async function POST(req: NextRequest) {
   const session = await auth();
-  if (!session) {
+  if (!session || session.role !== "ADMIN") {
     return NextResponse.json({ error: "No autorizado" }, { status: 401 });
   }
 

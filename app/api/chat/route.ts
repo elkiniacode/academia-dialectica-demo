@@ -1,3 +1,4 @@
+import { NextResponse } from "next/server";
 import { streamText } from "ai";
 import { anthropic } from "@ai-sdk/anthropic";
 import { openai } from "@ai-sdk/openai";
@@ -22,8 +23,8 @@ function getModel(provider: Provider) {
 
 export async function POST(req: Request) {
   const session = await auth();
-  if (!session) {
-    return new Response("No autorizado", { status: 401 });
+  if (!session || session.role !== "ADMIN") {
+    return NextResponse.json({ error: "No autorizado" }, { status: 401 });
   }
 
   const { messages, provider = "claude" } = await req.json();

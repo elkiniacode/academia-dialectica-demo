@@ -190,6 +190,14 @@ See [14_implementation.md](memory/14_implementation.md) for full details.
 - Welcome page: 3 character class sprites with glow wrappers in `hero-section.tsx`, hidden during game mode
 - Components: `components/sprite-animator.tsx`, `components/character-avatar.tsx`, `components/character-companion.tsx`
 
+## Security Hardening v2
+
+See [15_implementation.md](memory/15_implementation.md) for full details.
+
+- API route authorization: `/api/chat`, `/api/analyze-client`, `/api/analyze-clients-bulk` now enforce `session.role === "ADMIN"` (previously only checked session existence)
+- Telegram webhook fail-fast: `TELEGRAM_ALLOWED_USER_ID` and `TELEGRAM_WEBHOOK_SECRET` env vars are now mandatory — server crashes on startup if missing or malformed
+- Telegram guards unconditional: secret header and user ID checks always run (no more conditional `if (WEBHOOK_SECRET)` wrappers)
+
 ## Docker & Deployment
 
 - `Dockerfile` and `.dockerignore` are configured for Next.js standalone output
