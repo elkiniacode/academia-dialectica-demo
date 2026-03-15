@@ -1,0 +1,153 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+enum Role {
+  ADMIN
+  CLIENT
+}
+
+model Client {
+  id             String         @id @default(uuid()) @db.Uuid
+  name           String         @unique
+  hourlyRate     Float
+  currency       String         @default("COP")
+  student        String?
+  modalidad      String?
+  grado          String?
+  celular        String?
+  direccion      String?
+  correo         String?
+  username       String?        @unique
+  password       String?
+  role           Role           @default(CLIENT)
+  hp             Int            @default(100)
+  xp             Int            @default(0)
+  level          Int            @default(1)
+  characterName  String?
+  characterClass String?
+  createdAt      DateTime       @default(now())
+  updatedAt      DateTime       @updatedAt @default(now())
+  sessions       Session[]
+  balanceEntries BalanceEntry[]
+  exams          Exam[]
+  progressNotes  ProgressNote[]
+  suggestions    Suggestion[]
+
+  @@map("clients")
+}
+
+model Session {
+  id              String   @id @default(uuid()) @db.Uuid
+  eventId         String   @unique
+  clientId        String   @db.Uuid
+  client          Client   @relation(fields: [clientId], references: [id])
+  date            DateTime @db.Date
+  durationHours   Float
+  calculatedCost  Float
+
+  @@map("sessions")
+}
+
+model MonthlyBalance {
+  id        String         @id @default(uuid()) @db.Uuid
+  year      Int
+  month     Int
+  status    String         @default("generated")
+  createdAt DateTime       @default(now())
+  updatedAt DateTime       @updatedAt
+  entries   BalanceEntry[]
+
+  @@unique([year, month])
+  @@map("monthly_balances")
+}
+
+model BalanceEntry {
+  id             String         @id @default(uuid()) @db.Uuid
+  balanceId      String         @db.Uuid
+  balance        MonthlyBalance @relation(fields: [balanceId], references: [id], onDelete: Cascade)
+  clientId       String         @db.Uuid
+  client         Client         @relation(fields: [clientId], references: [id])
+  clientName     String
+  individualCost Float
+  hours          Float
+  totalCost      Float
+
+  @@unique([balanceId, clientId])
+  @@map("balance_entries")
+}
+
+model Testimonial {
+  id         String   @id @default(uuid()) @db.Uuid
+  clientName String
+  content    String
+  rating     Int?
+  visible    Boolean  @default(true)
+  createdAt  DateTime @default(now())
+
+  @@map("testimonials")
+}
+
+model Story {
+  id        String   @id @default(uuid()) @db.Uuid
+  title     String
+  content   String
+  imageUrl  String?
+  visible   Boolean  @default(true)
+  createdAt DateTime @default(now())
+
+  @@map("stories")
+}
+
+model Lead {
+  id         String   @id @default(uuid()) @db.Uuid
+  number     Int      @unique @default(autoincrement())
+  name       String
+  email      String   @unique
+  phone      String?
+  gameScore  Int?
+  difficulty String?
+  createdAt  DateTime @default(now())
+
+  @@map("leads")
+}
+
+model Exam {
+  id         String   @id @default(uuid()) @db.Uuid
+  clientId   String   @db.Uuid
+  client     Client   @relation(fields: [clientId], references: [id], onDelete: Cascade)
+  title      String
+  score      Float
+  date       DateTime @db.Date
+  commentary String
+  createdAt  DateTime @default(now())
+
+  @@map("exams")
+}
+
+model ProgressNote {
+  id        String   @id @default(uuid()) @db.Uuid
+  clientId  String   @db.Uuid
+  client    Client   @relation(fields: [clientId], references: [id], onDelete: Cascade)
+  content   String
+  date      DateTime @db.Date
+  color     String
+  createdAt DateTime @default(now())
+
+  @@map("progress_notes")
+}
+
+model Suggestion {
+  id        String   @id @default(uuid()) @db.Uuid
+  clientId  String   @db.Uuid
+  client    Client   @relation(fields: [clientId], references: [id], onDelete: Cascade)
+  message   String
+  status    String   @default("unread")
+  createdAt DateTime @default(now())
+
+  @@map("suggestions")
+}

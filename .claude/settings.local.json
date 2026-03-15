@@ -1,0 +1,7 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(grep -l \"bulk-import\\\\|client-form\" /c/Users/elkin/projects/running/components/*.tsx)"
+    ]
+  }
+}
