@@ -106,7 +106,7 @@ export async function getClientRevenueMatrix(
   year: number
 ): Promise<ClientRevenueMatrix> {
   const session = await auth();
-  if (!session) {
+  if (!session || session.role !== "ADMIN") {
     return { clients: [], data: {}, monthTotals: Array(12).fill(0), clientTotals: {}, grandTotal: 0 };
   }
 
