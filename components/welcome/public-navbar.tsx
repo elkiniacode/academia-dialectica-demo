@@ -8,6 +8,7 @@ const NAV_LINKS = [
   { href: "#caracteristicas", label: "Características" },
   { href: "#modalidades", label: "Modalidades" },
   { href: "#testimonios", label: "Testimonios" },
+  { href: "#footer", label: "Contáctanos" },
 ];
 
 export function PublicNavbar() {
