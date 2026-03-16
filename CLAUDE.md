@@ -240,6 +240,18 @@ See [18_implementation.md](memory/18_implementation.md) for full details.
 - "Acceso Administrador" replaced with "Conoce Más" anchor (`#caracteristicas`)
 - Component: `components/welcome/hero-section.tsx` — layout-only refactor, zero game logic changes
 
+## Landing Page Polish
+
+See [19_implementation.md](memory/19_implementation.md) for full details.
+
+- Hero background: `bg-blue-50` (soft solid blue); game container: restored `bg-gradient-to-br from-blue-600 via-blue-700 to-indigo-800`
+- Ambient neurons doubled: desktop 120, tablet 70, mobile 30 (`neuron-canvas.tsx`)
+- "Escoge tu personaje favorito" label added above character sprites in hero
+- Navbar: "Historias de Éxito" (`#historias`) and "Contáctanos" (`#footer`) links added
+- Stories section: `id="historias"` added for anchor navigation
+- Footer: social links (Instagram, TikTok, YouTube), full contact info (phone, email, location), legibility improvements (`text-gray-300`, `text-base`, logo in rounded box, larger social icons with hover circles)
+- All section anchor IDs: `#hero`, `#caracteristicas`, `#modalidades`, `#historias`, `#testimonios`, `#footer`
+
 ## Docker & Deployment
 
 - `Dockerfile` and `.dockerignore` are configured for Next.js standalone output
