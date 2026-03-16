@@ -225,6 +225,21 @@ See [17_implementation.md](memory/17_implementation.md) for full details.
 - `fadeIn` keyframe in `globals.css` for tab content transitions
 - Hero section: logo removed (moved to navbar), `id="hero"` added, all game logic preserved
 
+## Hero Section Split-Screen Redesign
+
+See [18_implementation.md](memory/18_implementation.md) for full details.
+
+- Hero section refactored from full-screen blue gradient to 50/50 split-screen on `bg-gray-50`
+- 2-column grid (`grid-cols-1 lg:grid-cols-2`): left = text/sprites/CTAs, right = game container
+- Left column: Bankist eyebrow, gradient-highlighted headline, character sprites in `flex` row, "Empieza el Juego" + "Conoce Más" CTAs
+- Right column: `rounded-[2.5rem] bg-gray-900` container with `shadow-2xl`; NeuronCanvas fills via `absolute inset-0`
+- Game mode expansion: left column hides, right column grows to `lg:col-span-2 lg:h-[80vh]` with `transition-all duration-500`
+- No hover translate on game container — click targets stay stable during gameplay
+- HUD trapped inside `relative overflow-hidden` container (absolute positioning, not fixed)
+- Modals: `fixed inset-0 z-[60]` — overlay full viewport; upgraded with premium rounded cards, labeled form inputs, score display cards
+- "Acceso Administrador" replaced with "Conoce Más" anchor (`#caracteristicas`)
+- Component: `components/welcome/hero-section.tsx` — layout-only refactor, zero game logic changes
+
 ## Docker & Deployment
 
 - `Dockerfile` and `.dockerignore` are configured for Next.js standalone output
