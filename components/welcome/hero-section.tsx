@@ -141,7 +141,7 @@ export function HeroSection() {
   // UPDATED JSX UI (BANKIST SPLIT-SCREEN)
   // ==========================================
   return (
-    <section id="hero" className="relative pt-32 pb-20 lg:pt-40 lg:pb-28 bg-blue-50 overflow-hidden">
+    <section id="hero" className="relative pt-24 pb-20 lg:pt-10 lg:pb-10 bg-blue-200 overflow-hidden">
 
       {/* THE GRID CONTAINER */}
       <div className="max-w-7xl mx-auto px-6 grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-8 items-center">
@@ -160,6 +160,9 @@ export function HeroSection() {
             </p>
 
             {/* Character sprites - Now in a clean flex row */}
+            <p className="text-xs font-semibold text-gray-500 tracking-widest uppercase mb-3">
+              Escoge tu personaje favorito
+            </p>
             <div className="flex gap-6 mb-10">
               {["guerrero", "mago", "explorador"].map((cls) => (
                 <div key={cls} className="flex flex-col items-center group">
