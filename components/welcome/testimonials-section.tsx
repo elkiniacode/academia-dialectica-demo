@@ -29,27 +29,34 @@ export function TestimonialsSection({
   if (testimonials.length === 0) return null;
 
   return (
-    <section className="py-16 md:py-24 bg-white">
+    <section id="testimonios" className="py-20 md:py-28 bg-white">
       <div className="max-w-6xl mx-auto px-6">
-        <h2 className="text-3xl md:text-4xl font-bold text-center text-gray-900 mb-4">
-          Lo que dicen nuestros estudiantes
-        </h2>
-        <p className="text-gray-500 text-center mb-12 max-w-2xl mx-auto">
-          Testimonios de estudiantes y familias que han confiado en nuestras
-          clases
-        </p>
+        {/* Header with Eyebrow and tight tracking */}
+        <div className="text-center mb-16">
+          <p className="tracking-widest uppercase text-sm font-bold text-blue-600 mb-2">
+            Testimonios
+          </p>
+          <h2 className="text-3xl md:text-4xl font-bold tracking-tight text-gray-900 mb-4">
+            Lo que dicen nuestros estudiantes
+          </h2>
+          <p className="text-gray-500 max-w-2xl mx-auto">
+            Testimonios de estudiantes y familias que han confiado en nuestras clases
+          </p>
+        </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
           {testimonials.map((t) => (
             <div
               key={t.id}
-              className="bg-gray-50 rounded-2xl p-6 shadow-sm hover:shadow-md transition-shadow"
+              className="flex flex-col h-full bg-white rounded-2xl p-8 shadow-xl shadow-blue-900/5 ring-1 ring-gray-900/5 transition-all duration-300 ease-out hover:-translate-y-1"
             >
               {t.rating && <StarRating rating={t.rating} />}
-              <p className="text-gray-700 leading-relaxed mb-4 italic">
+              <p className="text-gray-700 leading-relaxed mb-6 italic">
                 &ldquo;{t.content}&rdquo;
               </p>
-              <p className="font-semibold text-gray-900">{t.clientName}</p>
+              <div className="mt-auto">
+                <p className="font-semibold text-gray-900">{t.clientName}</p>
+              </div>
             </div>
           ))}
         </div>

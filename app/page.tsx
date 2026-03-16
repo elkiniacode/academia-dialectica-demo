@@ -1,6 +1,9 @@
 import type { Metadata } from "next";
 import { prisma } from "@/lib/prisma";
+import { PublicNavbar } from "@/components/welcome/public-navbar";
 import { HeroSection } from "@/components/welcome/hero-section";
+import { FeaturesSection } from "@/components/welcome/features-section";
+import { ModalitiesSection } from "@/components/welcome/modalities-section";
 import { TestimonialsSection } from "@/components/welcome/testimonials-section";
 import { StoriesSection } from "@/components/welcome/stories-section";
 import { Footer } from "@/components/welcome/footer";
@@ -144,8 +147,11 @@ export default async function WelcomePage() {
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
       />
+      <PublicNavbar />
       <main>
         <HeroSection />
+        <FeaturesSection />
+        <ModalitiesSection />
         <TestimonialsSection testimonials={testimonials} />
         <StoriesSection stories={stories} />
         <Footer />

@@ -14,7 +14,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="es">
+    <html lang="es" className="scroll-smooth">
       <body className="bg-gray-50 min-h-screen">
         <SessionProvider>{children}</SessionProvider>
       </body>

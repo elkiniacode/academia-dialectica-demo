@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, useCallback, useEffect, useLayoutEffect, useRef } from "react";
-import Image from "next/image";
 import Link from "next/link";
 import { NeuronCanvas } from "./neuron-canvas";
 import { SpriteAnimator } from "../sprite-animator";
@@ -142,7 +141,7 @@ export function HeroSection() {
   const timerSeconds = String(timeLeft % 60).padStart(2, "0");
 
   return (
-    <section className="relative overflow-hidden bg-gradient-to-br from-blue-600 via-blue-700 to-indigo-800 text-white min-h-screen">
+    <section id="hero" className="relative overflow-hidden bg-gradient-to-br from-blue-600 via-blue-700 to-indigo-800 text-white min-h-screen">
       <div className="absolute inset-0 opacity-10">
         <div className="absolute top-10 left-10 w-72 h-72 bg-white rounded-full blur-3xl" />
         <div className="absolute bottom-10 right-10 w-96 h-96 bg-blue-300 rounded-full blur-3xl" />
@@ -165,16 +164,6 @@ export function HeroSection() {
           className="relative max-w-5xl mx-auto px-6 py-24 md:py-32 text-center pointer-events-none"
           style={{ zIndex: 2 }}
         >
-          <div className="flex justify-center mb-6">
-            <Image
-              src="/logo.png"
-              alt="Academia Dialéctica"
-              width={140}
-              height={100}
-              style={{ mixBlendMode: "screen" }}
-              priority
-            />
-          </div>
           <h1 className="text-4xl md:text-6xl font-extrabold leading-tight mb-6">
             <span className="text-blue-200">Academia Dialéctica</span>
             <br />

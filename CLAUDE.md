@@ -211,6 +211,20 @@ See [15_implementation.md](memory/15_implementation.md) for full details.
 - Telegram webhook fail-fast: `TELEGRAM_ALLOWED_USER_ID` and `TELEGRAM_WEBHOOK_SECRET` env vars are now mandatory — server crashes on startup if missing or malformed
 - Telegram guards unconditional: secret header and user ID checks always run (no more conditional `if (WEBHOOK_SECRET)` wrappers)
 
+## Bankist-Inspired Landing Page Redesign
+
+See [17_implementation.md](memory/17_implementation.md) for full details.
+
+- Public landing page redesigned with clean, minimalist Bankist UI design language
+- Glassmorphism sticky navbar: `components/welcome/public-navbar.tsx` — logo, anchor links (#caracteristicas, #modalidades, #testimonios), "Acceso" CTA, mobile hamburger with absolute overlay dropdown
+- Features section: `components/welcome/features-section.tsx` — 3 Bankist-style alternating rows (image placeholder + icon/text), `id="caracteristicas"`
+- Tabbed modalities: `components/welcome/modalities-section.tsx` — Presencial/Online/Híbrido tabs with `key={activeTab}` fade animation, `id="modalidades"`
+- Stories slider: `components/welcome/stories-section.tsx` — CSS-transform horizontal slider replacing grid, `<Image />` replacing raw `<img>`, prev/next arrows + dot navigation
+- Premium design system: diffused shadows (`shadow-xl shadow-blue-900/5 ring-1 ring-gray-900/5`), micro-interactions (`hover:-translate-y-1`), tight header tracking, uppercase eyebrow labels
+- Smooth scrolling: `scroll-smooth` on `<html>` in `app/layout.tsx`
+- `fadeIn` keyframe in `globals.css` for tab content transitions
+- Hero section: logo removed (moved to navbar), `id="hero"` added, all game logic preserved
+
 ## Docker & Deployment
 
 - `Dockerfile` and `.dockerignore` are configured for Next.js standalone output
