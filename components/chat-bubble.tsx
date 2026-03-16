@@ -20,6 +20,7 @@ export function ChatBubble() {
     useChat({
       api: "/api/chat",
       body: { provider },
+      maxSteps: 5,
     });
 
   useEffect(() => {
@@ -95,10 +96,10 @@ export function ChatBubble() {
       <div className="flex-1 overflow-y-auto p-4 space-y-3">
         {messages.length === 0 && !error && (
           <p className="text-gray-400 text-sm text-center mt-8">
-            Pregúntame sobre tus clientes...
+            Pregúntame sobre tus clientes o finanzas...
           </p>
         )}
-        {messages.map((m) => (
+        {messages.filter((m) => m.content.trim() !== "").map((m) => (
           <div
             key={m.id}
             className={`flex ${m.role === "user" ? "justify-end" : "justify-start"}`}

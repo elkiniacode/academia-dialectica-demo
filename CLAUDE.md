@@ -190,6 +190,19 @@ See [14_implementation.md](memory/14_implementation.md) for full details.
 - Welcome page: 3 character class sprites with glow wrappers in `hero-section.tsx`, hidden during game mode
 - Components: `components/sprite-animator.tsx`, `components/character-avatar.tsx`, `components/character-companion.tsx`
 
+## AI Chatbot Tool Calling
+
+See [16_implementation.md](memory/16_implementation.md) for full details.
+
+- Upgraded from static data injection to **true tool calling** via Vercel AI SDK v4 `tools` parameter
+- 7 tools defined with Zod schemas: `obtener_clientes`, `obtener_kpis_mensuales`, `obtener_matriz_ingresos_clientes`, `obtener_crecimiento_clientes`, `obtener_comparacion_anual`, `obtener_balance_mensual`, `obtener_periodos_disponibles`
+- Tools call existing server actions from `dashboard-actions.ts` and `fetch-balance.ts` — no new data layer
+- `maxSteps: 5` on both `streamText` (server) and `useChat` (client) for multi-round tool chaining
+- System prompt includes today's date for relative time resolution ("el mes pasado" → correct year/month)
+- PII still redacted on `obtener_clientes` before sending to third-party AI providers
+- Empty tool-call intermediate messages filtered from chat UI rendering
+- ADMIN role guard preserved at top of `/api/chat` POST handler
+
 ## Security Hardening v2
 
 See [15_implementation.md](memory/15_implementation.md) for full details.
