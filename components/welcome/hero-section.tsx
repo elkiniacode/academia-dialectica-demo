@@ -141,7 +141,7 @@ export function HeroSection() {
   // UPDATED JSX UI (BANKIST SPLIT-SCREEN)
   // ==========================================
   return (
-    <section id="hero" className="relative pt-32 pb-20 lg:pt-40 lg:pb-28 bg-blue-50/50 overflow-hidden">
+    <section id="hero" className="relative pt-32 pb-20 lg:pt-40 lg:pb-28 bg-blue-50 overflow-hidden">
 
       {/* THE GRID CONTAINER */}
       <div className="max-w-7xl mx-auto px-6 grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-8 items-center">
@@ -202,7 +202,7 @@ export function HeroSection() {
 
         {/* RIGHT COLUMN: The Floating Game Container */}
         <div
-          className={`relative w-full aspect-square lg:aspect-auto lg:h-[600px] rounded-[2.5rem] overflow-hidden shadow-2xl shadow-blue-900/20 ring-1 ring-gray-900/5 bg-slate-950 transition-all duration-500 ease-in-out ${
+          className={`relative w-full aspect-square lg:aspect-auto lg:h-[600px] rounded-[2.5rem] overflow-hidden shadow-2xl shadow-blue-900/20 ring-1 ring-gray-900/5 bg-gradient-to-br from-blue-600 via-blue-700 to-indigo-800 transition-all duration-500 ease-in-out ${
             gameActive || showRules || gameOver || gameComplete
               ? 'lg:col-span-2 lg:h-[80vh] lg:max-h-[700px]'
               : ''
