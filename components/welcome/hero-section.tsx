@@ -30,6 +30,8 @@ export function HeroSection() {
   const [timeLeft, setTimeLeft] = useState(120);
   const [gameOver, setGameOver] = useState(false);
   const [finalCerebritos, setFinalCerebritos] = useState(0);
+  const [selectedClass, setSelectedClass] = useState<string | null>(null);
+  const [showClassModal, setShowClassModal] = useState(false);
 
   const difficultyRef = useRef(difficulty);
   const timeLeftRef = useRef(timeLeft);
@@ -165,8 +167,16 @@ export function HeroSection() {
             </p>
             <div className="flex gap-6 mb-10">
               {["guerrero", "mago", "explorador"].map((cls) => (
-                <div key={cls} className="flex flex-col items-center group">
-                  <div className="p-2 rounded-full bg-blue-500/10 transition-transform duration-300 group-hover:scale-110 group-hover:bg-blue-500/20">
+                <button
+                  key={cls}
+                  onClick={() => { setSelectedClass(cls); setShowClassModal(true); }}
+                  className="flex flex-col items-center group focus:outline-none"
+                >
+                  <div className={`p-2 rounded-full transition-all duration-300 group-hover:scale-110 ${
+                    selectedClass === cls
+                      ? "bg-blue-500/40 ring-2 ring-blue-500 scale-110"
+                      : "bg-blue-500/10 group-hover:bg-blue-500/20"
+                  }`}>
                     <SpriteAnimator
                       src={`/characters/${cls}/idle.png`}
                       frameWidth={256}
@@ -178,10 +188,12 @@ export function HeroSection() {
                       alt={cls}
                     />
                   </div>
-                  <span className="text-xs font-bold text-blue-600 mt-3 tracking-widest uppercase">
+                  <span className={`text-xs font-bold mt-3 tracking-widest uppercase transition-colors ${
+                    selectedClass === cls ? "text-blue-500" : "text-blue-600"
+                  }`}>
                     {cls}
                   </span>
-                </div>
+                </button>
               ))}
             </div>
 
@@ -326,6 +338,37 @@ export function HeroSection() {
               className="w-full bg-blue-600 hover:bg-blue-700 hover:-translate-y-1 shadow-lg shadow-blue-600/30 text-white font-bold py-4 rounded-xl transition-all"
             >
               Jugar de Nuevo
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* Character selection modal */}
+      {showClassModal && selectedClass && (
+        <div className="fixed inset-0 flex items-center justify-center bg-gray-900/80 backdrop-blur-sm" style={{ zIndex: 60 }}>
+          <div className="bg-white p-10 rounded-3xl max-w-sm w-full text-center shadow-2xl ring-1 ring-gray-900/5 mx-4">
+            <div className="w-24 h-24 mx-auto mb-6 p-2 rounded-full bg-blue-500/10 ring-2 ring-blue-500">
+              <SpriteAnimator
+                src={`/characters/${selectedClass}/idle.png`}
+                frameWidth={256}
+                frameHeight={256}
+                frameCount={4}
+                displayWidth={80}
+                displayHeight={80}
+                duration={0.8}
+                alt={selectedClass}
+              />
+            </div>
+            <p className="tracking-widest uppercase text-xs font-bold text-blue-600 mb-2">Tu personaje</p>
+            <h2 className="text-3xl font-bold tracking-tight text-gray-900 mb-2 capitalize">{selectedClass}</h2>
+            <p className="text-gray-500 mb-8 leading-relaxed">
+              ¡Gracias por tu elección! Dale click a <strong className="text-gray-700">Empieza el Juego</strong>, gana y cuando te registres, podrás comenzar tu aventura como <strong className="text-gray-700 capitalize">{selectedClass}</strong>.
+            </p>
+            <button
+              onClick={() => setShowClassModal(false)}
+              className="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 rounded-xl transition-colors shadow-lg shadow-blue-600/30"
+            >
+              ¡Entendido!
             </button>
           </div>
         </div>

@@ -23,8 +23,8 @@ export function PublicNavbar() {
           <Image
             src="/logo.png"
             alt="Academia Dialéctica"
-            width={50}
-            height={36}
+            width={75}
+            height={54}
             priority
           />
         </a>
