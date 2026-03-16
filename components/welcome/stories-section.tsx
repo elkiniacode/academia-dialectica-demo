@@ -24,7 +24,7 @@ export function StoriesSection({ stories }: { stories: Story[] }) {
     setCurrentSlide((c) => (c === totalSlides - 1 ? 0 : c + 1));
 
   return (
-    <section className="py-20 md:py-28 bg-gray-50">
+    <section id="historias" className="py-20 md:py-28 bg-gray-50">
       <div className="max-w-4xl mx-auto px-6">
         {/* Header with Eyebrow */}
         <div className="text-center mb-16">

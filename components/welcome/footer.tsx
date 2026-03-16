@@ -42,6 +42,14 @@ export function Footer() {
               </li>
               <li>
                 <a
+                  href="#historias"
+                  className="inline-block transition-all duration-300 ease-out hover:text-white hover:translate-x-1"
+                >
+                  Historias de Éxito
+                </a>
+              </li>
+              <li>
+                <a
                   href="#testimonios"
                   className="inline-block transition-all duration-300 ease-out hover:text-white hover:translate-x-1"
                 >
