@@ -19,8 +19,13 @@ RUN npm ci
 FROM base AS builder
 COPY --from=deps-dev /app/node_modules ./node_modules
 COPY . .
-RUN DATABASE_URL="postgresql://dummy" npx prisma generate
-RUN npm run build
+ARG DATABASE_URL="postgresql://dummy"
+ENV DATABASE_URL=${DATABASE_URL}
+RUN npx prisma generate
+RUN TELEGRAM_ALLOWED_USER_ID="0" \
+    TELEGRAM_WEBHOOK_SECRET="dummy" \
+    TELEGRAM_BOT_TOKEN="dummy" \
+    npm run build
 
 # ──────────────────────────────────────────────────────────
 # Target: dev — hot-reload development server

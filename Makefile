@@ -66,7 +66,7 @@ docker-down:
 	docker compose --profile dev --profile prod down
 
 docker-build-prod:
-	docker build --target prod -t running-app .
+	docker build --target prod --build-arg DATABASE_URL="$$DATABASE_URL" -t running-app .
 
 docker-run-prod:
 	docker run -p 3000:3000 --env-file .env running-app
