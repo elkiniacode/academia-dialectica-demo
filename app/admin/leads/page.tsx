@@ -14,7 +14,14 @@ export default async function LeadsPage() {
 
   return (
     <div className="max-w-7xl mx-auto p-6">
-      <h1 className="text-2xl font-bold mb-4">Leads</h1>
+      <h1 className="text-2xl font-bold mb-2">Leads</h1>
+      <p className="text-sm text-gray-500 mb-6 max-w-3xl">
+        Lista de personas que jugaron el{" "}
+        <span className="font-medium text-gray-700">Neuron Hunt</span> en la
+        página principal y dejaron sus datos al reclamar su premio. Son
+        contactos potenciales para tu academia. Puedes descargar el listado en
+        formato CSV para importarlo a tu herramienta de contacto favorita.
+      </p>
       {leads.length === 0 ? (
         <p className="text-gray-500">No hay leads registrados aún.</p>
       ) : (

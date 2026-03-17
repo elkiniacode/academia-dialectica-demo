@@ -137,6 +137,62 @@ async function main() {
     console.log(`  ✅ Client: ${c.name} (${c.student}) — user: ${c.username}`);
   }
 
+  // ─── Special Demo Accounts (Bart & Big Boss) ────────────────────
+  const bartPw = await hashPassword("ab676767");
+  const bbPw = await hashPassword("platzi2026");
+
+  // 1. Bart Simpson (Student Demo)
+  const bart = await prisma.client.upsert({
+    where: { username: "bart" },
+    update: { password: bartPw, role: "CLIENT" },
+    create: {
+      name: "Familia Simpson",
+      student: "Bart Simpson",
+      hourlyRate: 10000,
+      currency: "COP",
+      grado: "8vo",
+      modalidad: "Online",
+      celular: "555-000-0001",
+      direccion: "Calle Falsa 123, Bogotá",
+      correo: "bart@demo.com",
+      username: "bart",
+      password: bartPw,
+      role: "CLIENT",
+      characterName: "Artemia",
+      characterClass: "guerrero",
+      hp: 85,
+      xp: 250,
+      level: 3,
+    },
+  });
+  // We add him to createdClients so any global logic can still reference him
+  createdClients.push(bart);
+  console.log(`  ✅ Demo Student: Bart Simpson — user: bart`);
+
+  // 2. Big Boss (Admin Demo)
+  await prisma.client.upsert({
+    where: { username: "Big Boss (BB)" },
+    update: { password: bbPw, role: "ADMIN" },
+    create: {
+      name: "Big Boss",
+      student: "Admin Demo",
+      hourlyRate: 10000,
+      currency: "COP",
+      grado: "N/A",
+      modalidad: "N/A",
+      celular: "555-000-0098",
+      direccion: "Demo HQ, Bogotá",
+      correo: "bigboss@demo.com",
+      username: "Big Boss (BB)",
+      password: bbPw,
+      role: "ADMIN",
+      hp: 100,
+      xp: 0,
+      level: 1,
+    },
+  });
+  console.log(`  ✅ Demo Admin: Big Boss (BB) — user: Big Boss (BB)`);
+
   // ─── Sessions across Jan–Mar 2025 & Jan–Mar 2026 ───────────────
   const sessionData = [
     // ── January 2025 ──
@@ -478,12 +534,14 @@ async function main() {
 
   // ─── Summary ────────────────────────────────────────────────────
   console.log("\n🎉 Demo database seeded successfully!");
-  console.log("\n📋 Login credentials (all passwords: demo1234):");
-  console.log("   sofia     — Guerrero Lv3, has exams & notes");
-  console.log("   andres    — Mago Lv2, ICFES prep");
-  console.log("   valentina — Explorador Lv1, young student");
-  console.log("   mateo     — Guerrero Lv2, online student");
-  console.log("   isabella  — Mago Lv4, advanced student");
+  console.log("\n📋 Login credentials:");
+  console.log("   Big Boss (BB) — Admin Demo (Pass: platzi2026)");
+  console.log("   bart          — Student Demo (Pass: ab676767)");
+  console.log("   sofia         — Standard Demo (Pass: demo1234)");
+  console.log("   andres        — Standard Demo (Pass: demo1234)");
+  console.log("   valentina     — Standard Demo (Pass: demo1234)");
+  console.log("   mateo         — Standard Demo (Pass: demo1234)");
+  console.log("   isabella      — Standard Demo (Pass: demo1234)");
   console.log("\n📅 Data spans: Jan–Mar 2025 & Jan–Mar 2026");
 }
 

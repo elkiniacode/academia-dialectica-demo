@@ -1,6 +1,9 @@
+import Image from "next/image";
+
 const FEATURES = [
   {
     number: "01",
+    image: "/images/features/feature-2.jpg",
     title: "Tutoría Personalizada",
     description:
       "Cada estudiante recibe un plan de estudio adaptado a su ritmo, nivel y objetivos. No hay dos clases iguales porque no hay dos estudiantes iguales.",
@@ -13,6 +16,7 @@ const FEATURES = [
   },
   {
     number: "02",
+    image: "/images/features/feature-1.jpg",
     title: "Seguimiento Académico",
     description:
       "Monitoreo continuo del progreso con reportes detallados, exámenes evaluados y notas de avance. Los padres y estudiantes siempre saben dónde están parados.",
@@ -25,6 +29,7 @@ const FEATURES = [
   },
   {
     number: "03",
+    image: "/images/features/feature-3.jpg",
     title: "Flexibilidad Total",
     description:
       "Clases presenciales en Bogotá u online desde cualquier lugar. Horarios adaptados a tu agenda, con sesiones individuales o en grupos pequeños.",
@@ -39,7 +44,7 @@ const FEATURES = [
 
 export function FeaturesSection() {
   return (
-    <section id="caracteristicas" className="py-20 md:py-28 bg-white">
+    <section id="caracteristicas" className="py-20 md:py-28 bg-blue-50">
       <div className="max-w-6xl mx-auto px-6">
         <p className="tracking-widest uppercase text-sm font-bold text-blue-600 mb-2">
           Características
@@ -57,10 +62,19 @@ export function FeaturesSection() {
               {/* Visual side (Large Image) */}
               <div className={i % 2 === 1 ? "md:order-2" : ""}>
                 <div className="relative w-full aspect-video md:aspect-square rounded-2xl overflow-hidden shadow-xl shadow-blue-900/5 ring-1 ring-gray-900/5">
-                  {/* Replace this div with an actual <Image /> when you have the photos */}
-                  <div className="absolute inset-0 bg-gray-100 flex items-center justify-center text-gray-400">
-                    [Imagen representativa {feature.number}]
-                  </div>
+                  {feature.image ? (
+                    <Image
+                      src={feature.image}
+                      alt={feature.title}
+                      fill
+                      className="object-cover"
+                      sizes="(max-width: 768px) 100vw, 50vw"
+                    />
+                  ) : (
+                    <div className="absolute inset-0 bg-gray-100 flex items-center justify-center text-gray-400">
+                      [Imagen representativa {feature.number}]
+                    </div>
+                  )}
                 </div>
               </div>
 

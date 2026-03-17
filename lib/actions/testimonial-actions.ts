@@ -23,6 +23,7 @@ export async function createTestimonial(
 ): Promise<ActionResult> {
   const session = await auth();
   if (!session || session.role !== "ADMIN") return { success: false, error: "No autorizado" };
+  if (session.userId) return { success: false, error: "La cuenta demo no puede crear testimonios" };
 
   const clientName = formData.get("clientName")?.toString().trim();
   const content = formData.get("content")?.toString().trim();
@@ -51,6 +52,7 @@ export async function updateTestimonial(
 ): Promise<ActionResult> {
   const session = await auth();
   if (!session || session.role !== "ADMIN") return { success: false, error: "No autorizado" };
+  if (session.userId) return { success: false, error: "La cuenta demo no puede editar testimonios" };
 
   const clientName = formData.get("clientName")?.toString().trim();
   const content = formData.get("content")?.toString().trim();
@@ -77,6 +79,7 @@ export async function updateTestimonial(
 export async function deleteTestimonial(id: string): Promise<ActionResult> {
   const session = await auth();
   if (!session || session.role !== "ADMIN") return { success: false, error: "No autorizado" };
+  if (session.userId) return { success: false, error: "La cuenta demo no puede eliminar testimonios" };
 
   await prisma.testimonial.delete({ where: { id } });
   revalidatePath("/");
@@ -88,6 +91,7 @@ export async function toggleTestimonialVisibility(
 ): Promise<ActionResult> {
   const session = await auth();
   if (!session || session.role !== "ADMIN") return { success: false, error: "No autorizado" };
+  if (session.userId) return { success: false, error: "La cuenta demo no puede modificar testimonios" };
 
   const testimonial = await prisma.testimonial.findUnique({ where: { id } });
   if (!testimonial)

@@ -27,7 +27,7 @@ export function ModalitiesSection() {
   const [activeTab, setActiveTab] = useState(0);
 
   return (
-    <section id="modalidades" className="py-20 md:py-28 bg-gray-50">
+    <section id="modalidades" className="py-20 md:py-28 bg-blue-300">
       <div className="max-w-5xl mx-auto px-6 text-center">
         <p className="tracking-widest uppercase text-sm font-bold text-blue-600 mb-2">
           Modalidades
@@ -56,7 +56,7 @@ export function ModalitiesSection() {
         {/* Content panel — key forces fade animation on tab switch */}
         <div
           key={activeTab}
-          className="bg-white rounded-2xl p-8 md:p-12 shadow-xl shadow-blue-900/5 ring-1 ring-gray-900/5 text-left max-w-3xl mx-auto animate-[fadeIn_0.5s_ease-out]"
+          className="bg-white rounded-2xl p-8 md:p-12 shadow-xl shadow-blue-900/10 border border-blue-100 border-t-4 border-t-blue-500 text-left max-w-3xl mx-auto animate-[fadeIn_0.5s_ease-out]"
         >
           <h3 className="text-xl md:text-2xl font-bold tracking-tight text-gray-900 mb-4">
             {TABS[activeTab].title}

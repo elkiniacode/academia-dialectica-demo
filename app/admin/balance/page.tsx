@@ -43,9 +43,17 @@ export default async function BalancePage({ searchParams }: Props) {
 
   return (
     <div className="max-w-6xl mx-auto p-6">
-      <h1 className="text-2xl font-bold mb-4">
+      <h1 className="text-2xl font-bold mb-2">
         Balance Mensual &mdash; {MONTH_NAMES[month]} {year}
       </h1>
+      <p className="text-sm text-gray-500 mb-6 max-w-3xl">
+        Aquí ves el dinero ingresado por cliente y el total del mes. Las horas
+        se calculan leyendo automáticamente los eventos de{" "}
+        <span className="font-medium text-gray-700">Google Calendar</span>.
+        Usa las pestañas para navegar entre meses, y el botón{" "}
+        <span className="font-medium text-gray-700">"Generar Balance"</span>{" "}
+        para actualizar los datos del mes actual.
+      </p>
 
       <MonthTabs
         year={year}

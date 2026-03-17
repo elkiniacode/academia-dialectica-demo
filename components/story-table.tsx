@@ -19,9 +19,10 @@ interface StoryData {
 
 interface Props {
   stories: StoryData[];
+  readOnly?: boolean;
 }
 
-export function StoryTable({ stories }: Props) {
+export function StoryTable({ stories, readOnly = false }: Props) {
   const [editing, setEditing] = useState<StoryData | null>(null);
   const [showCreate, setShowCreate] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -56,12 +57,14 @@ export function StoryTable({ stories }: Props) {
     <>
       <div className="flex justify-between items-center mb-4">
         <p className="text-sm text-gray-500">{stories.length} historias</p>
-        <button
-          onClick={() => setShowCreate(true)}
-          className="px-4 py-2 bg-blue-600 text-white text-sm rounded hover:bg-blue-700"
-        >
-          + Agregar Historia
-        </button>
+        {!readOnly && (
+          <button
+            onClick={() => setShowCreate(true)}
+            className="px-4 py-2 bg-blue-600 text-white text-sm rounded hover:bg-blue-700"
+          >
+            + Agregar Historia
+          </button>
+        )}
       </div>
 
       {error && <p className="text-red-500 text-sm mb-3">{error}</p>}
@@ -120,32 +123,44 @@ export function StoryTable({ stories }: Props) {
                   )}
                 </td>
                 <td className="border border-gray-300 px-3 py-2 text-center">
-                  <button
-                    onClick={() => handleToggle(s)}
-                    disabled={isPending}
-                    className={`text-xs px-2 py-1 rounded ${
-                      s.visible
-                        ? "bg-green-100 text-green-700"
-                        : "bg-gray-100 text-gray-500"
-                    }`}
-                  >
-                    {s.visible ? "Visible" : "Oculto"}
-                  </button>
+                  {readOnly ? (
+                    <span className={`text-xs px-2 py-1 rounded ${s.visible ? "bg-green-100 text-green-700" : "bg-gray-100 text-gray-500"}`}>
+                      {s.visible ? "Visible" : "Oculto"}
+                    </span>
+                  ) : (
+                    <button
+                      onClick={() => handleToggle(s)}
+                      disabled={isPending}
+                      className={`text-xs px-2 py-1 rounded ${
+                        s.visible
+                          ? "bg-green-100 text-green-700"
+                          : "bg-gray-100 text-gray-500"
+                      }`}
+                    >
+                      {s.visible ? "Visible" : "Oculto"}
+                    </button>
+                  )}
                 </td>
                 <td className="border border-gray-300 px-3 py-2 text-center whitespace-nowrap">
-                  <button
-                    onClick={() => setEditing(s)}
-                    className="text-blue-600 hover:underline text-xs mr-2"
-                  >
-                    Editar
-                  </button>
-                  <button
-                    onClick={() => handleDelete(s)}
-                    disabled={isPending}
-                    className="text-red-600 hover:underline text-xs disabled:opacity-50"
-                  >
-                    Eliminar
-                  </button>
+                  {readOnly ? (
+                    <span className="text-xs text-gray-400">Solo lectura</span>
+                  ) : (
+                    <>
+                      <button
+                        onClick={() => setEditing(s)}
+                        className="text-blue-600 hover:underline text-xs mr-2"
+                      >
+                        Editar
+                      </button>
+                      <button
+                        onClick={() => handleDelete(s)}
+                        disabled={isPending}
+                        className="text-red-600 hover:underline text-xs disabled:opacity-50"
+                      >
+                        Eliminar
+                      </button>
+                    </>
+                  )}
                 </td>
               </tr>
             ))}
@@ -153,8 +168,8 @@ export function StoryTable({ stories }: Props) {
         </table>
       </div>
 
-      {showCreate && <StoryForm onClose={() => setShowCreate(false)} />}
-      {editing && (
+      {!readOnly && showCreate && <StoryForm onClose={() => setShowCreate(false)} />}
+      {!readOnly && editing && (
         <StoryForm story={editing} onClose={() => setEditing(null)} />
       )}
     </>

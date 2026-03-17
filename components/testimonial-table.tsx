@@ -19,9 +19,10 @@ interface TestimonialData {
 
 interface Props {
   testimonials: TestimonialData[];
+  readOnly?: boolean;
 }
 
-export function TestimonialTable({ testimonials }: Props) {
+export function TestimonialTable({ testimonials, readOnly = false }: Props) {
   const [editing, setEditing] = useState<TestimonialData | null>(null);
   const [showCreate, setShowCreate] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -58,12 +59,14 @@ export function TestimonialTable({ testimonials }: Props) {
         <p className="text-sm text-gray-500">
           {testimonials.length} testimonios
         </p>
-        <button
-          onClick={() => setShowCreate(true)}
-          className="px-4 py-2 bg-blue-600 text-white text-sm rounded hover:bg-blue-700"
-        >
-          + Agregar Testimonio
-        </button>
+        {!readOnly && (
+          <button
+            onClick={() => setShowCreate(true)}
+            className="px-4 py-2 bg-blue-600 text-white text-sm rounded hover:bg-blue-700"
+          >
+            + Agregar Testimonio
+          </button>
+        )}
       </div>
 
       {error && <p className="text-red-500 text-sm mb-3">{error}</p>}
@@ -111,32 +114,44 @@ export function TestimonialTable({ testimonials }: Props) {
                   {t.rating ? `${t.rating}/5` : "—"}
                 </td>
                 <td className="border border-gray-300 px-3 py-2 text-center">
-                  <button
-                    onClick={() => handleToggle(t)}
-                    disabled={isPending}
-                    className={`text-xs px-2 py-1 rounded ${
-                      t.visible
-                        ? "bg-green-100 text-green-700"
-                        : "bg-gray-100 text-gray-500"
-                    }`}
-                  >
-                    {t.visible ? "Visible" : "Oculto"}
-                  </button>
+                  {readOnly ? (
+                    <span className={`text-xs px-2 py-1 rounded ${t.visible ? "bg-green-100 text-green-700" : "bg-gray-100 text-gray-500"}`}>
+                      {t.visible ? "Visible" : "Oculto"}
+                    </span>
+                  ) : (
+                    <button
+                      onClick={() => handleToggle(t)}
+                      disabled={isPending}
+                      className={`text-xs px-2 py-1 rounded ${
+                        t.visible
+                          ? "bg-green-100 text-green-700"
+                          : "bg-gray-100 text-gray-500"
+                      }`}
+                    >
+                      {t.visible ? "Visible" : "Oculto"}
+                    </button>
+                  )}
                 </td>
                 <td className="border border-gray-300 px-3 py-2 text-center whitespace-nowrap">
-                  <button
-                    onClick={() => setEditing(t)}
-                    className="text-blue-600 hover:underline text-xs mr-2"
-                  >
-                    Editar
-                  </button>
-                  <button
-                    onClick={() => handleDelete(t)}
-                    disabled={isPending}
-                    className="text-red-600 hover:underline text-xs disabled:opacity-50"
-                  >
-                    Eliminar
-                  </button>
+                  {readOnly ? (
+                    <span className="text-xs text-gray-400">Solo lectura</span>
+                  ) : (
+                    <>
+                      <button
+                        onClick={() => setEditing(t)}
+                        className="text-blue-600 hover:underline text-xs mr-2"
+                      >
+                        Editar
+                      </button>
+                      <button
+                        onClick={() => handleDelete(t)}
+                        disabled={isPending}
+                        className="text-red-600 hover:underline text-xs disabled:opacity-50"
+                      >
+                        Eliminar
+                      </button>
+                    </>
+                  )}
                 </td>
               </tr>
             ))}
@@ -144,10 +159,10 @@ export function TestimonialTable({ testimonials }: Props) {
         </table>
       </div>
 
-      {showCreate && (
+      {!readOnly && showCreate && (
         <TestimonialForm onClose={() => setShowCreate(false)} />
       )}
-      {editing && (
+      {!readOnly && editing && (
         <TestimonialForm
           testimonial={editing}
           onClose={() => setEditing(null)}

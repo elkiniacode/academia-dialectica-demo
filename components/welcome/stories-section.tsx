@@ -24,7 +24,7 @@ export function StoriesSection({ stories }: { stories: Story[] }) {
     setCurrentSlide((c) => (c === totalSlides - 1 ? 0 : c + 1));
 
   return (
-    <section id="historias" className="py-20 md:py-28 bg-gray-50">
+    <section id="historias" className="py-20 md:py-28 bg-blue-300">
       <div className="max-w-4xl mx-auto px-6">
         {/* Header with Eyebrow */}
         <div className="text-center mb-16">
@@ -40,7 +40,7 @@ export function StoriesSection({ stories }: { stories: Story[] }) {
         </div>
 
         {/* Slider container */}
-        <div className="relative overflow-hidden bg-white rounded-2xl shadow-xl shadow-blue-900/5 ring-1 ring-gray-900/5">
+        <div className="relative overflow-hidden bg-white rounded-2xl shadow-xl shadow-blue-900/10 border border-blue-100 border-t-4 border-t-blue-500">
           <div
             className="flex transition-transform duration-500 ease-in-out"
             style={{ transform: `translateX(-${currentSlide * 100}%)` }}

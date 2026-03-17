@@ -29,7 +29,7 @@ export function TestimonialsSection({
   if (testimonials.length === 0) return null;
 
   return (
-    <section id="testimonios" className="py-20 md:py-28 bg-white">
+    <section id="testimonios" className="py-20 md:py-28 bg-blue-50">
       <div className="max-w-6xl mx-auto px-6">
         {/* Header with Eyebrow and tight tracking */}
         <div className="text-center mb-16">
@@ -48,7 +48,7 @@ export function TestimonialsSection({
           {testimonials.map((t) => (
             <div
               key={t.id}
-              className="flex flex-col h-full bg-white rounded-2xl p-8 shadow-xl shadow-blue-900/5 ring-1 ring-gray-900/5 transition-all duration-300 ease-out hover:-translate-y-1"
+              className="flex flex-col h-full bg-white rounded-2xl p-8 shadow-xl shadow-blue-900/10 border border-blue-100 border-t-4 border-t-blue-500 transition-all duration-300 ease-out hover:-translate-y-1 hover:border-t-blue-600 hover:shadow-blue-100"
             >
               {t.rating && <StarRating rating={t.rating} />}
               <p className="text-gray-700 leading-relaxed mb-6 italic">
