@@ -1,4 +1,4 @@
-.PHONY: dev prod preview test test-watch build install db-generate db-push db-deploy db-seed audit audit-fix security
+.PHONY: dev prod preview test test-watch build install db-generate db-push db-deploy db-seed audit audit-fix security docker-dev docker-prod docker-down docker-build-prod docker-run-prod
 
 # ── Development ───────────────────────────────────────────
 dev:
@@ -54,3 +54,19 @@ db-seed:
 install:
 	npm ci
 	npx prisma generate
+
+# ── Docker ───────────────────────────────────────────────
+docker-dev:
+	docker compose --profile dev up --build
+
+docker-prod:
+	docker compose --profile prod up --build
+
+docker-down:
+	docker compose --profile dev --profile prod down
+
+docker-build-prod:
+	docker build --target prod -t running-app .
+
+docker-run-prod:
+	docker run -p 3000:3000 --env-file .env running-app

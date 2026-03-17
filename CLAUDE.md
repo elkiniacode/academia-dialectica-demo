@@ -252,8 +252,21 @@ See [19_implementation.md](memory/19_implementation.md) for full details.
 - Footer: social links (Instagram, TikTok, YouTube), full contact info (phone, email, location), legibility improvements (`text-gray-300`, `text-base`, logo in rounded box, larger social icons with hover circles)
 - All section anchor IDs: `#hero`, `#caracteristicas`, `#modalidades`, `#historias`, `#testimonios`, `#footer`
 
+## Performance, Testing, CI & Docker
+
+See [20_implementation.md](memory/20_implementation.md) for full details.
+
+- Web performance: lazy-loading (ChatBubble, Recharts), ISR, Image optimization, unstable_cache on dashboard queries, narrowed revalidatePath, Prisma select, streaming skeletons
+- Unit tests: Vitest + happy-dom, 19 tests (password validation + login redirect)
+- CI: GitHub Actions — security audit + unit tests on push/PR (Node 20)
+- Makefile: dev, prod, test, security, Docker targets
+- AI migration: Gemini removed entirely, image analysis uses Claude Vision (`claude-sonnet-4`), chat has Claude + OpenAI
+
 ## Docker & Deployment
 
-- `Dockerfile` and `.dockerignore` are configured for Next.js standalone output
+- Multi-stage `Dockerfile`: base → deps-dev → builder → dev/prod targets
+- `docker-compose.yml`: dev (hot-reload bind mount) + prod (minimal image) via profiles
 - `next.config.ts` has `output: "standalone"` enabled
-- Run: `docker build -t running-app . && docker run -p 3000:3000 --env-file .env running-app`
+- Dev: `make docker-dev` | Prod: `make docker-prod` | Build: `make docker-build-prod`
+- Recommended cloud: Railway (auto-detects Dockerfile, GitHub auto-deploy)
+- Cloudflare Workers incompatible (Prisma 7, bcryptjs, streaming AI)
