@@ -28,7 +28,7 @@ Upgraded the AI chatbot from static data injection (dumping all client JSON into
 
 **Preserved:**
 - ADMIN role check at top of `POST` handler (security hardening v2)
-- Three-provider switching (Claude, OpenAI, Gemini)
+- Two-provider switching (Claude, OpenAI)
 - `toDataStreamResponse()` streaming
 
 ### `components/chat-bubble.tsx` — 3 small changes

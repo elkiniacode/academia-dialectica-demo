@@ -10,7 +10,7 @@ Plataforma integral de gestion economica, academica y marketing para Academia Di
 | Base de datos | PostgreSQL (Supabase) + Prisma 7 |
 | Autenticacion | NextAuth v5 — Google OAuth (admin) + Credentials (estudiantes) |
 | Estilos | Tailwind CSS 4 |
-| IA | Vercel AI SDK v4 (Claude, OpenAI, Gemini) + Google Gemini para analisis de formularios |
+| IA | Vercel AI SDK v4 (Claude, OpenAI) + Claude Vision para analisis de formularios |
 | Despliegue | Docker (standalone output) |
 
 ## Funcionalidades
@@ -27,8 +27,8 @@ Plataforma integral de gestion economica, academica y marketing para Academia Di
 
 - **Dashboard:** resumen de balances mensuales + alerta de sugerencias no leidas
 - **Clientes:** CRUD completo con formularios modales
-  - **Analisis IA:** sube foto/video de un formulario de estudiante y Gemini extrae los campos automaticamente
-  - **Importacion masiva:** sube video/foto con multiples formularios, Gemini extrae todos como JSON, tabla editable de vista previa, insercion atomica en lote
+  - **Analisis IA:** sube foto de un formulario de estudiante y Claude Vision extrae los campos automaticamente
+  - **Importacion masiva:** sube foto con multiples formularios, Claude extrae todos como JSON, tabla editable de vista previa, insercion atomica en lote
 - **Detalle de cliente** (`/admin/clients/[id]`):
   - Panel de gamificacion (HP/XP/Nivel) en ancho completo
   - Examenes con puntajes codificados por color (verde >= 7, amarillo >= 5, rojo < 5)
@@ -36,7 +36,7 @@ Plataforma integral de gestion economica, academica y marketing para Academia Di
   - Buzon de sugerencias (lectura + marcar como leido)
 - **Leads:** lista numerada con exportacion CSV por rango
 - **Balances:** seguimiento mensual de sesiones sincronizadas desde Google Calendar
-- **Chatbot IA:** burbuja flotante con proveedores intercambiables (Claude, OpenAI, Gemini), consulta datos de la BD con guardrails anti-alucinacion y redaccion de PII
+- **Chatbot IA:** burbuja flotante con proveedores intercambiables (Claude, OpenAI), consulta datos de la BD con guardrails anti-alucinacion y redaccion de PII
 - **Bot de Telegram:** webhook en `/api/telegram/webhook` para entrada rapida desde el celular
 
 ### Portal Estudiantil (`/client/*`)
@@ -79,7 +79,6 @@ GOOGLE_CLIENT_ID=...
 GOOGLE_CLIENT_SECRET=...
 
 # Proveedores IA
-GEMINI_API_KEY=...
 ANTHROPIC_API_KEY=...
 OPENAI_API_KEY=...
 
@@ -134,9 +133,9 @@ Notas detalladas de cada funcionalidad en el directorio `memory/`:
 | `00_implementation.md` | Configuracion de Prisma 7 y Supabase |
 | `01_implementation.md` | Scaffolding de Next.js y sistema de balances mensuales |
 | `02_implementation.md` | Gestion de clientes y bot de Telegram |
-| `03_implementation.md` | Analisis IA de formularios de clientes (Gemini) |
+| `03_implementation.md` | Analisis IA de formularios de clientes (Claude Vision) |
 | `04_implementation.md` | Pagina publica y reestructuracion del admin |
-| `05_implementation.md` | Importacion masiva de clientes desde video/foto |
+| `05_implementation.md` | Importacion masiva de clientes desde foto |
 | `06_implementation.md` | Chatbot IA asistente (multi-proveedor) |
 | `07_implementation.md` | Animacion de neuronas en canvas |
 | `08_implementation.md` | Mini-juego Neuron Hunt |

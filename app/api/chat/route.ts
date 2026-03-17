@@ -3,7 +3,6 @@ import { streamText, tool } from "ai";
 import { z } from "zod";
 import { anthropic } from "@ai-sdk/anthropic";
 import { openai } from "@ai-sdk/openai";
-import { createGoogleGenerativeAI } from "@ai-sdk/google";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import {
@@ -14,9 +13,7 @@ import {
 } from "@/lib/actions/dashboard-actions";
 import { fetchMonthlyBalance, getAvailableBalances } from "@/lib/actions/fetch-balance";
 
-const google = createGoogleGenerativeAI({ apiKey: process.env.GEMINI_API_KEY! });
-
-type Provider = "claude" | "openai" | "gemini";
+type Provider = "claude" | "openai";
 
 function getModel(provider: Provider) {
   switch (provider) {
@@ -24,8 +21,6 @@ function getModel(provider: Provider) {
       return anthropic("claude-sonnet-4-20250514");
     case "openai":
       return openai("gpt-4o-mini");
-    case "gemini":
-      return google("gemini-2.5-flash");
   }
 }
 

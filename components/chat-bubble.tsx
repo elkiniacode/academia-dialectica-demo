@@ -3,12 +3,11 @@
 import { useState, useRef, useEffect } from "react";
 import { useChat } from "ai/react";
 
-type Provider = "claude" | "openai" | "gemini";
+type Provider = "claude" | "openai";
 
 const PROVIDER_LABELS: Record<Provider, string> = {
   claude: "Claude",
   openai: "OpenAI",
-  gemini: "Gemini",
 };
 
 export function ChatBubble() {

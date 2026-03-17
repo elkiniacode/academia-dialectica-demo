@@ -49,8 +49,8 @@ export async function createExam(
     },
   });
 
+  revalidatePath(`/admin/clients/${clientId}`);
   revalidatePath("/client/dashboard");
-  revalidatePath("/admin/clients", "layout");
   return { success: true };
 }
 
@@ -69,7 +69,7 @@ export async function updateExam(
   const dateObj = new Date(data.date);
   if (isNaN(dateObj.getTime())) return { success: false, error: "Fecha inválida" };
 
-  await prisma.exam.update({
+  const exam = await prisma.exam.update({
     where: { id: examId },
     data: {
       title: data.title.trim(),
@@ -79,8 +79,8 @@ export async function updateExam(
     },
   });
 
+  revalidatePath(`/admin/clients/${exam.clientId}`);
   revalidatePath("/client/dashboard");
-  revalidatePath("/admin/clients", "layout");
   return { success: true };
 }
 
@@ -90,8 +90,8 @@ export async function deleteExam(examId: string): Promise<ExamResult> {
   if (!session || session.role !== "ADMIN")
     return { success: false, error: "No autorizado" };
 
-  await prisma.exam.delete({ where: { id: examId } });
+  const exam = await prisma.exam.delete({ where: { id: examId } });
+  revalidatePath(`/admin/clients/${exam.clientId}`);
   revalidatePath("/client/dashboard");
-  revalidatePath("/admin/clients", "layout");
   return { success: true };
 }

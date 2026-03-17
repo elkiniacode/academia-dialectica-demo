@@ -1,8 +1,8 @@
-# Bulk Video/Photo Import for Multiple Clients
+# Bulk Photo Import for Multiple Clients
 
 ## Overview
 
-Upload a video or photo containing multiple client forms → Gemini extracts all clients as a JSON array → preview in an editable table → batch-insert into the database.
+Upload a photo containing multiple client forms → Claude vision extracts all clients as a JSON array → preview in an editable table → batch-insert into the database.
 
 ## Files Created/Modified
 
@@ -16,12 +16,11 @@ Upload a video or photo containing multiple client forms → Gemini extracts all
 ## Bulk API Route — `/api/analyze-clients-bulk`
 
 - Separate route from the single-client `/api/analyze-client`
-- Prompt asks Gemini for a JSON **array** of all clients found: `[{...}, {...}]`
+- Prompt asks Claude for a JSON **array** of all clients found: `[{...}, {...}]`
 - Regex parsing uses `/\[[\s\S]*\]/` for arrays, with fallback to single-object wrapped in `[data]`
-- Strips markdown fences before parsing (Gemini sometimes wraps in ``` blocks)
+- Strips markdown fences before parsing
 - **File size limit**: 20 MB — returns HTTP 413 with descriptive message
-- **Video processing timeout**: 60s (30 polls × 2s) — returns HTTP 422 with descriptive message
-- Upload, video polling, and cleanup logic identical to the single-client route
+- Images only (JPEG, PNG, GIF, WebP) — Claude does not support video
 
 ## Server Action — `bulkCreateClients`
 
@@ -43,8 +42,8 @@ Upload a video or photo containing multiple client forms → Gemini extracts all
 
 ## Frontend — ClientTable Integration
 
-- Green "Importación Masiva (Video/Foto)" button added next to existing blue "+ Agregar Cliente"
+- Green "Importación Masiva (Foto)" button added next to existing blue "+ Agregar Cliente"
 - Hidden `<input type="file">` triggered by the button
-- Spinner animation while Gemini analyzes the file
+- Spinner animation while Claude analyzes the image
 - Dismissable red error banner for API errors (file too large, timeout, etc.)
 - `<BulkImportPreview>` renders when `bulkData` state is populated

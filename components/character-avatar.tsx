@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import Image from "next/image";
 import { SpriteAnimator } from "./sprite-animator";
 
 interface Props {
@@ -89,9 +90,11 @@ export function CharacterAvatar({
 
   // 3. Middle Fallback / Default: The Static Image
   return (
-    <img
+    <Image
       src={levelSrc}
       alt={`${safeClass} nivel ${cappedLevel}`}
+      width={displaySize}
+      height={displaySize}
       className={`${SIZE_CLASSES[size]} bg-gray-100 rounded-xl object-cover shadow-md border-4 border-white transform transition-transform hover:scale-105`}
       style={{ imageRendering: "pixelated" }}
       onError={() => setImgError(true)}

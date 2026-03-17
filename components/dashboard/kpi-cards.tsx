@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import type { MonthlyKPI } from "@/lib/actions/dashboard-actions";
 
 const MONTH_NAMES = [
@@ -28,15 +28,6 @@ export function KPICards({ kpis }: Props) {
       ? monthsWithData[monthsWithData.length - 1].month
       : new Date().getMonth() + 1;
   });
-
-  useEffect(() => {
-    const activeMonths = kpis.filter((k) => k.totalRevenue > 0);
-    if (activeMonths.length > 0) {
-      setSelectedMonth(activeMonths[activeMonths.length - 1].month);
-    } else {
-      setSelectedMonth(new Date().getMonth() + 1);
-    }
-  }, [kpis]);
 
   const kpi = kpis.find((k) => k.month === selectedMonth);
   const hasData = (kpi?.totalRevenue ?? 0) > 0;

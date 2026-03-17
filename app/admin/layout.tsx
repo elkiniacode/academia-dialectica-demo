@@ -1,5 +1,5 @@
 import { NavBar } from "@/components/nav-bar";
-import { ChatBubble } from "@/components/chat-bubble";
+import { ChatBubbleLazy } from "@/components/chat-bubble-lazy";
 
 export default function AdminLayout({
   children,
@@ -10,7 +10,7 @@ export default function AdminLayout({
     <>
       <NavBar />
       {children}
-      <ChatBubble />
+      <ChatBubbleLazy />
     </>
   );
 }

@@ -40,7 +40,7 @@ Prevents `Invalid Date` objects from reaching the database.
 
 ## PII Redaction in Chat API
 
-Updated `app/api/chat/route.ts` to strip sensitive fields (`celular`, `direccion`, `correo`, `password`, `username`) from client data before sending to third-party AI providers (Claude, OpenAI, Gemini).
+Updated `app/api/chat/route.ts` to strip sensitive fields (`celular`, `direccion`, `correo`, `password`, `username`) from client data before sending to third-party AI providers (Claude, OpenAI).
 
 ## CSV Download Auth Check
 

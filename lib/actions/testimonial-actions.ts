@@ -42,7 +42,8 @@ export async function createTestimonial(
     data: { clientName, content, rating },
   });
 
-  revalidatePath("/");
+  revalidatePath("/", "page");
+  revalidatePath("/admin/testimonials");
   return { success: true };
 }
 
@@ -72,7 +73,8 @@ export async function updateTestimonial(
     data: { clientName, content, rating },
   });
 
-  revalidatePath("/");
+  revalidatePath("/", "page");
+  revalidatePath("/admin/testimonials");
   return { success: true };
 }
 
@@ -82,7 +84,8 @@ export async function deleteTestimonial(id: string): Promise<ActionResult> {
   if (session.userId) return { success: false, error: "La cuenta demo no puede eliminar testimonios" };
 
   await prisma.testimonial.delete({ where: { id } });
-  revalidatePath("/");
+  revalidatePath("/", "page");
+  revalidatePath("/admin/testimonials");
   return { success: true };
 }
 
@@ -102,6 +105,7 @@ export async function toggleTestimonialVisibility(
     data: { visible: !testimonial.visible },
   });
 
-  revalidatePath("/");
+  revalidatePath("/", "page");
+  revalidatePath("/admin/testimonials");
   return { success: true };
 }

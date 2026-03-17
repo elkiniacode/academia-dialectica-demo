@@ -8,6 +8,8 @@ import { TestimonialsSection } from "@/components/welcome/testimonials-section";
 import { StoriesSection } from "@/components/welcome/stories-section";
 import { Footer } from "@/components/welcome/footer";
 
+export const revalidate = 3600;
+
 const baseUrl = process.env.NEXTAUTH_URL ?? "http://localhost:3000";
 
 export const metadata: Metadata = {

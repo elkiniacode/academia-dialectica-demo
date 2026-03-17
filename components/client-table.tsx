@@ -99,7 +99,7 @@ export function ClientTable({ clients }: Props) {
       <input
         ref={bulkFileInputRef}
         type="file"
-        accept="image/jpeg,image/png,image/gif,image/webp,video/mp4,video/webm,video/quicktime"
+        accept="image/jpeg,image/png,image/gif,image/webp"
         onChange={handleBulkFileChange}
         className="hidden"
       />
@@ -121,7 +121,7 @@ export function ClientTable({ clients }: Props) {
                 Analizando...
               </span>
             ) : (
-              "Importación Masiva (Video/Foto)"
+              "Importación Masiva (Foto)"
             )}
           </button>
           <button

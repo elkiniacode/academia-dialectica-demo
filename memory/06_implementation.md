@@ -12,21 +12,18 @@ Uses `ai@^4` with matching provider packages. **Important:** The SDK was intenti
 
 - `streamText()` + `result.toDataStreamResponse()` on the server
 - `useChat` from `ai/react` on the client (v4 subpath export)
-- Provider packages: `@ai-sdk/anthropic@^1`, `@ai-sdk/openai@^1`, `@ai-sdk/google@^1`
+- Provider packages: `@ai-sdk/anthropic@^1`, `@ai-sdk/openai@^1`
 
 Note: `@ai-sdk/react@^3` remains in package.json from a prior install attempt but is **not used** — v4's `useChat` comes from `ai/react`.
 
 ### Provider Switching
 
-Users can switch between three AI providers via a dropdown in the chat header. Chat history is preserved when switching.
+Users can switch between two AI providers via a dropdown in the chat header. Chat history is preserved when switching.
 
 | Provider | Model | Env Var |
 |----------|-------|---------|
 | Claude | `claude-sonnet-4-20250514` | `ANTHROPIC_API_KEY` |
 | OpenAI | `gpt-4o-mini` | `OPENAI_API_KEY` |
-| Gemini | `gemini-2.5-flash` | `GEMINI_API_KEY` |
-
-The Gemini provider uses `createGoogleGenerativeAI({ apiKey: process.env.GEMINI_API_KEY! })` to reuse the existing env var (the default `@ai-sdk/google` reads `GOOGLE_GENERATIVE_AI_API_KEY` instead).
 
 ### Anti-Hallucination Guardrail
 
@@ -65,11 +62,9 @@ The system prompt includes a strict instruction:
 ai@^4.3.19
 @ai-sdk/anthropic@^1.2.12
 @ai-sdk/openai@^1.3.24
-@ai-sdk/google@^1.2.22
 ```
 
 ## Environment Variables Required
 
 - `ANTHROPIC_API_KEY` — for Claude
 - `OPENAI_API_KEY` — for OpenAI
-- `GEMINI_API_KEY` — already existed, reused via custom `createGoogleGenerativeAI` config

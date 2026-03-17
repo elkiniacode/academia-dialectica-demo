@@ -32,7 +32,7 @@ export async function createSuggestion(
   });
 
   revalidatePath("/client/dashboard");
-  revalidatePath("/admin/clients", "layout");
+  revalidatePath(`/admin/clients/${session.userId}`);
   return { success: true };
 }
 
@@ -66,12 +66,12 @@ export async function markSuggestionRead(
   if (!session || session.role !== "ADMIN")
     return { success: false, error: "No autorizado" };
 
-  await prisma.suggestion.update({
+  const suggestion = await prisma.suggestion.update({
     where: { id: suggestionId },
     data: { status: "read" },
   });
 
-  revalidatePath("/client/dashboard");
-  revalidatePath("/admin/clients", "layout");
+  revalidatePath(`/admin/clients/${suggestion.clientId}`);
+  revalidatePath("/admin/dashboard");
   return { success: true };
 }

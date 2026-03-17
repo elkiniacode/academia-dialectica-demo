@@ -15,11 +15,11 @@ export default async function ClientsPage() {
         contacto, modalidad, grado y acceso al portal. Puedes agregar clientes
         manualmente o usar{" "}
         <span className="font-medium text-gray-700">
-          "Importación Masiva (Video/Foto)"
+          &ldquo;Importación Masiva (Foto)&rdquo;
         </span>{" "}
-        para subir una imagen o video con varios formularios a la vez — la IA
-        extrae los datos automáticamente. Haz clic en{" "}
-        <span className="font-medium text-gray-700">"Ver"</span> para ver el
+        para subir una imagen con un formulario — la IA extrae los datos
+        automáticamente. Haz clic en{" "}
+        <span className="font-medium text-gray-700">&ldquo;Ver&rdquo;</span> para ver el
         detalle académico de cada estudiante.
       </p>
       <ClientTable clients={clients} />

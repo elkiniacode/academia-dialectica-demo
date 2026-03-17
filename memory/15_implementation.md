@@ -9,8 +9,8 @@ Three API routes only checked `if (!session)` but did not verify `session.role =
 | Route | Risk Before Fix |
 |-------|----------------|
 | `/api/chat` | CLIENT could query ALL client business data (names, rates, sessions, balances) via AI chatbot |
-| `/api/analyze-client` | CLIENT could invoke Gemini API calls at admin's expense |
-| `/api/analyze-clients-bulk` | CLIENT could invoke bulk Gemini analysis at admin's expense |
+| `/api/analyze-client` | CLIENT could invoke Claude API calls at admin's expense |
+| `/api/analyze-clients-bulk` | CLIENT could invoke bulk Claude analysis at admin's expense |
 
 ### Changes
 

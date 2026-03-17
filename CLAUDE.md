@@ -19,24 +19,25 @@ See [02_implementation.md](memory/02_implementation.md) for full details.
 - Env vars required: `TELEGRAM_BOT_TOKEN`, `TELEGRAM_ALLOWED_USER_ID`
 - Telegram webhook must be registered with a public URL: `https://api.telegram.org/bot<TOKEN>/setWebhook?url=https://<domain>/api/telegram/webhook`
 
-## AI Client Analysis (Gemini)
+## AI Client Analysis (Claude)
 
 See [03_implementation.md](memory/03_implementation.md) for full details.
 
-- Upload photo/video of client form → Gemini extracts data → auto-fills the Add Client modal
+- Upload photo of client form → Claude vision extracts data → auto-fills the Add Client modal
 - API route: `/api/analyze-client` (POST, auth-protected)
-- Model: `gemini-2.5-flash` (older models `gemini-2.0-flash-lite` and `gemini-2.0-flash` are discontinued)
-- Env var required: `GEMINI_API_KEY` (must be from Google Cloud Console with billing enabled, not AI Studio free tier)
+- Model: `claude-sonnet-4-20250514` via `@anthropic-ai/sdk` — sends image as base64
+- Images only (JPEG, PNG, GIF, WebP) — video not supported by Claude vision
+- Env var required: `ANTHROPIC_API_KEY`
 
-## Bulk Client Import (Video/Photo)
+## Bulk Client Import (Photo)
 
 See [05_implementation.md](memory/05_implementation.md) for full details.
 
-- Upload video/photo with multiple client forms → Gemini extracts all as JSON array → editable preview table → batch insert
-- Bulk API route: `/api/analyze-clients-bulk` (POST, auth-protected, 200 MB file limit)
+- Upload photo with multiple client forms → Claude vision extracts all as JSON array → editable preview table → batch insert
+- Bulk API route: `/api/analyze-clients-bulk` (POST, auth-protected, 20 MB file limit)
 - Server action: `bulkCreateClients` in `lib/actions/client-actions.ts` — validates, dedupes, atomic transaction
 - Preview component: `components/bulk-import-preview.tsx` — inline-editable table with row deletion
-- Green "Importación Masiva (Video/Foto)" button on `/admin/clients` page
+- Green "Importación Masiva (Foto)" button on `/admin/clients` page
 
 ## AI Chatbot Assistant
 
@@ -45,12 +46,11 @@ See [06_implementation.md](memory/06_implementation.md) for full details.
 - Floating chat bubble on all `/admin/*` pages for querying client data in natural language
 - Uses Vercel AI SDK **v4** (`ai@^4`) — do NOT upgrade to v6, the API is incompatible
 - `streamText()` + `toDataStreamResponse()` server-side; `useChat` from `ai/react` client-side
-- Three switchable providers: Claude (`claude-sonnet-4-20250514`), OpenAI (`gpt-4o-mini`), Gemini (`gemini-2.5-flash`)
+- Two switchable providers: Claude (`claude-sonnet-4-20250514`), OpenAI (`gpt-4o-mini`)
 - API route: `/api/chat` (POST, auth-protected, streaming); provider sent via `body` in `useChat`
 - Anti-hallucination guardrail: AI responds only from DB data, refuses to invent information
 - Error handling: inline red banner with context-aware messages (401, invalid API key, generic)
-- Env vars required: `ANTHROPIC_API_KEY`, `OPENAI_API_KEY`, `GEMINI_API_KEY`
-- Gemini uses `createGoogleGenerativeAI({ apiKey: GEMINI_API_KEY })` — not the default env var name
+- Env vars required: `ANTHROPIC_API_KEY`, `OPENAI_API_KEY`
 - Component: `components/chat-bubble.tsx` — fixed-position bubble at bottom-right with provider dropdown
 
 ## Neuron Canvas Animation (Hero Section)

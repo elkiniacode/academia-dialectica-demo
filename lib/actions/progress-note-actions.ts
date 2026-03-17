@@ -49,8 +49,8 @@ export async function createProgressNote(
     },
   });
 
+  revalidatePath(`/admin/clients/${clientId}`);
   revalidatePath("/client/dashboard");
-  revalidatePath("/admin/clients", "layout");
   return { success: true };
 }
 
@@ -70,7 +70,7 @@ export async function updateProgressNote(
   if (isNaN(dateObj.getTime()))
     return { success: false, error: "Fecha inválida" };
 
-  await prisma.progressNote.update({
+  const note = await prisma.progressNote.update({
     where: { id: noteId },
     data: {
       content: data.content.trim(),
@@ -79,8 +79,8 @@ export async function updateProgressNote(
     },
   });
 
+  revalidatePath(`/admin/clients/${note.clientId}`);
   revalidatePath("/client/dashboard");
-  revalidatePath("/admin/clients", "layout");
   return { success: true };
 }
 
@@ -92,8 +92,8 @@ export async function deleteProgressNote(
   if (!session || session.role !== "ADMIN")
     return { success: false, error: "No autorizado" };
 
-  await prisma.progressNote.delete({ where: { id: noteId } });
+  const note = await prisma.progressNote.delete({ where: { id: noteId } });
+  revalidatePath(`/admin/clients/${note.clientId}`);
   revalidatePath("/client/dashboard");
-  revalidatePath("/admin/clients", "layout");
   return { success: true };
 }

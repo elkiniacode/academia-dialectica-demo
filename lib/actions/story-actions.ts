@@ -35,7 +35,8 @@ export async function createStory(formData: FormData): Promise<ActionResult> {
     data: { title, content, imageUrl },
   });
 
-  revalidatePath("/");
+  revalidatePath("/", "page");
+  revalidatePath("/admin/stories");
   return { success: true };
 }
 
@@ -60,7 +61,8 @@ export async function updateStory(
     data: { title, content, imageUrl },
   });
 
-  revalidatePath("/");
+  revalidatePath("/", "page");
+  revalidatePath("/admin/stories");
   return { success: true };
 }
 
@@ -70,7 +72,8 @@ export async function deleteStory(id: string): Promise<ActionResult> {
   if (session.userId) return { success: false, error: "La cuenta demo no puede eliminar historias" };
 
   await prisma.story.delete({ where: { id } });
-  revalidatePath("/");
+  revalidatePath("/", "page");
+  revalidatePath("/admin/stories");
   return { success: true };
 }
 
@@ -89,6 +92,7 @@ export async function toggleStoryVisibility(
     data: { visible: !story.visible },
   });
 
-  revalidatePath("/");
+  revalidatePath("/", "page");
+  revalidatePath("/admin/stories");
   return { success: true };
 }

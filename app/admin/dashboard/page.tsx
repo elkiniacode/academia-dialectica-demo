@@ -10,10 +10,8 @@ import {
 import { getSuggestions } from "@/lib/actions/suggestion-actions";
 import { YearNav } from "@/components/dashboard/year-nav";
 import { KPICards } from "@/components/dashboard/kpi-cards";
-import { TrendCharts } from "@/components/dashboard/trend-charts";
 import { RevenueMatrix } from "@/components/dashboard/revenue-matrix";
-import { ClientGrowthChart } from "@/components/dashboard/client-growth-chart";
-import { YearComparison } from "@/components/dashboard/year-comparison";
+import { TrendChartsLazy as TrendCharts, ClientGrowthChartLazy as ClientGrowthChart, YearComparisonLazy as YearComparison } from "@/components/dashboard/charts-lazy";
 
 interface Props {
   searchParams: Promise<{ year?: string }>;

@@ -138,12 +138,12 @@ export function ClientForm({ client, onClose }: Props) {
           {/* AI Image Upload */}
           <div className="mb-4 p-3 bg-blue-50 border border-blue-200 rounded-lg">
             <p className="text-xs text-blue-700 font-medium mb-2">
-              Autocompletar con IA — sube una foto o video del formulario del cliente
+              Autocompletar con IA — sube una foto del formulario del cliente
             </p>
             <input
               ref={fileInputRef}
               type="file"
-              accept="image/jpeg,image/png,image/gif,image/webp,video/mp4,video/webm,video/quicktime"
+              accept="image/jpeg,image/png,image/gif,image/webp"
               onChange={handleFileChange}
               disabled={isAnalyzing || isPending}
               className="hidden"
@@ -191,7 +191,7 @@ export function ClientForm({ client, onClose }: Props) {
                       d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"
                     />
                   </svg>
-                  Subir foto / video
+                  Subir foto
                 </>
               )}
             </label>

@@ -54,7 +54,7 @@ export function StoriesSection({ stories }: { stories: Story[] }) {
                       alt={story.title}
                       fill
                       className="object-cover"
-                      unoptimized
+                      sizes="(max-width: 768px) 100vw, 896px"
                     />
                   </div>
                 )}

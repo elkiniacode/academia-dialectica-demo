@@ -42,7 +42,9 @@ export async function generateMonthlyBalance(
 
   // Look up all clients and build a normalized-key → client map
   const clientNames = [...aggregated.keys()];
-  const clients = await prisma.client.findMany();
+  const clients = await prisma.client.findMany({
+    select: { id: true, name: true, hourlyRate: true },
+  });
   const clientMap = new Map(clients.map((c) => [normalizeKey(c.name), c]));
 
   const skippedClients: string[] = [];

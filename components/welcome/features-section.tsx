@@ -69,6 +69,7 @@ export function FeaturesSection() {
                       fill
                       className="object-cover"
                       sizes="(max-width: 768px) 100vw, 50vw"
+                      priority={i === 0}
                     />
                   ) : (
                     <div className="absolute inset-0 bg-gray-100 flex items-center justify-center text-gray-400">
