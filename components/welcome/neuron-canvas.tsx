@@ -497,11 +497,6 @@ export const NeuronCanvas = React.memo(function NeuronCanvas({
       const h = parent.clientHeight;
       const timeScale = dt / TARGET_DT;
 
-      // Softer physics on mobile to prevent jitter oscillation
-      const springStr = isMobile ? SPRING_STRENGTH * 0.4 : SPRING_STRENGTH;
-      const repStr = isMobile ? REPULSION_STRENGTH * 0.5 : REPULSION_STRENGTH;
-      const maxGrp = isMobile ? MAX_GROUP_SPEED * 0.5 : MAX_GROUP_SPEED;
-
       // Dynamic ideal spacing based on canvas area and neuron count
       const idealDist = Math.sqrt((w * h) / neurons.length) * EQUILIBRIUM_FACTOR;
       const interactionRadius = idealDist * INTERACTION_RADIUS_MULT;
@@ -527,14 +522,14 @@ export const NeuronCanvas = React.memo(function NeuronCanvas({
           const displacement = dist - idealDist;
           const normalizedForce = displacement / idealDist;
           const falloff = 1 - (dist / interactionRadius);
-          const springForce = normalizedForce * springStr * falloff;
+          const springForce = normalizedForce * SPRING_STRENGTH * falloff;
 
           fx += (dx / dist) * springForce;
           fy += (dy / dist) * springForce;
 
           // Hard short-range repulsion for overlap prevention
           if (distSq < repulsionDistSq) {
-            const push = Math.pow((REPULSION_DIST - dist) / REPULSION_DIST, 2) * repStr;
+            const push = Math.pow((REPULSION_DIST - dist) / REPULSION_DIST, 2) * REPULSION_STRENGTH;
             fx -= (dx / dist) * push;
             fy -= (dy / dist) * push;
           }
@@ -542,9 +537,9 @@ export const NeuronCanvas = React.memo(function NeuronCanvas({
 
         // Cap group force speed
         const groupSpeed = Math.sqrt(fx * fx + fy * fy);
-        if (groupSpeed > maxGrp) {
-          fx = (fx / groupSpeed) * maxGrp;
-          fy = (fy / groupSpeed) * maxGrp;
+        if (groupSpeed > MAX_GROUP_SPEED) {
+          fx = (fx / groupSpeed) * MAX_GROUP_SPEED;
+          fy = (fy / groupSpeed) * MAX_GROUP_SPEED;
         }
 
         neurons[i].groupVx = fx;
@@ -578,10 +573,8 @@ export const NeuronCanvas = React.memo(function NeuronCanvas({
         }
 
         // Multiplicative damping AFTER all forces (frame-rate independent)
-        // Stronger damping on mobile (0.93) prevents spring oscillation jitter
-        const damp = isMobile ? 0.93 : DAMPING;
-        n.vx *= Math.pow(damp, timeScale);
-        n.vy *= Math.pow(damp, timeScale);
+        n.vx *= Math.pow(DAMPING, timeScale);
+        n.vy *= Math.pow(DAMPING, timeScale);
 
         // Hard velocity cap — prevents runaway speeds
         const maxVel = 1.8;
@@ -646,8 +639,7 @@ export const NeuronCanvas = React.memo(function NeuronCanvas({
       }
     }
 
-    function update(dtMs: number) {
-      const dtSec = dtMs / 1000;
+    function update(dtSec: number) {
       // Decay wrong-click flash timer
       if (wrongClickFlash.time > 0) {
         wrongClickFlash.time = Math.max(0, wrongClickFlash.time - dtSec);
@@ -742,8 +734,6 @@ export const NeuronCanvas = React.memo(function NeuronCanvas({
         const { i, j, dist } = connectionPairs[p];
         const a = neurons[i];
         const b = neurons[j];
-        // Safety: skip if neuron was removed (stale cache index)
-        if (!a || !b) continue;
         const minDepth = Math.min(a.depth, b.depth);
         const alpha = (1 - dist / CONNECTION_DIST) * 0.28 * minDepth;
         const [cpx, cpy] = bezierControl(a.x, a.y, b.x, b.y);
@@ -951,7 +941,7 @@ export const NeuronCanvas = React.memo(function NeuronCanvas({
       const dtMs = Math.min(time - lastTime, 50);
       lastTime = time;
       animTime += dtMs;
-      update(dtMs);
+      update(dtMs / 1000);
       draw(animTime);
       animId = requestAnimationFrame(animate);
     }
