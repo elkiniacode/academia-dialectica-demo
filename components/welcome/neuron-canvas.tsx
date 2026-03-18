@@ -1,7 +1,6 @@
 "use client";
 
-import React, { useEffect, useLayoutEffect, useRef } from "react";
-import { closestNeighbors, NeighborResult } from "@/lib/closest-neighbors";
+import { useEffect, useLayoutEffect, useRef } from "react";
 
 // ---------------------------------------------------------------------------
 // Types
@@ -258,23 +257,28 @@ function bezierPoint(
   ];
 }
 
-// Pre-computed squared distance for zero-allocation neighbor lookups
-const CONNECTION_DIST_SQ = CONNECTION_DIST * CONNECTION_DIST;
+/** Get the N closest neighbor indices for a neuron */
+function closestNeighbors(
+  neurons: Neuron[],
+  idx: number,
+  maxDist: number,
+  maxCount: number
+): { j: number; dist: number }[] {
+  const n = neurons[idx];
+  const neighbors: { j: number; dist: number }[] = [];
 
-// Sin/cos lookup table (360 entries) — used on mobile only for perf
-const SIN_LUT = new Float64Array(360);
-const COS_LUT = new Float64Array(360);
-for (let i = 0; i < 360; i++) {
-  SIN_LUT[i] = Math.sin((i * Math.PI) / 180);
-  COS_LUT[i] = Math.cos((i * Math.PI) / 180);
-}
-function fastSin(rad: number): number {
-  const deg = ((rad * 180 / Math.PI) % 360 + 360) % 360;
-  return SIN_LUT[deg | 0];
-}
-function fastCos(rad: number): number {
-  const deg = ((rad * 180 / Math.PI) % 360 + 360) % 360;
-  return COS_LUT[deg | 0];
+  for (let j = 0; j < neurons.length; j++) {
+    if (j === idx) continue;
+    const dx = n.x - neurons[j].x;
+    const dy = n.y - neurons[j].y;
+    const dist = Math.sqrt(dx * dx + dy * dy);
+    if (dist < maxDist) {
+      neighbors.push({ j, dist });
+    }
+  }
+
+  neighbors.sort((a, b) => a.dist - b.dist);
+  return neighbors.slice(0, maxCount);
 }
 
 // ---------------------------------------------------------------------------
@@ -292,7 +296,7 @@ interface NeuronCanvasProps {
   onGameComplete?: () => void;
 }
 
-export const NeuronCanvas = React.memo(function NeuronCanvas({
+export function NeuronCanvas({
   gameActive = false,
   targetPaletteIdx = null,
   score = 0,
@@ -324,7 +328,7 @@ export const NeuronCanvas = React.memo(function NeuronCanvas({
   useEffect(() => {
     const canvasEl = canvasRef.current;
     if (!canvasEl) return;
-    const ctxEl = canvasEl.getContext("2d", { desynchronized: true });
+    const ctxEl = canvasEl.getContext("2d");
     if (!ctxEl) return;
     const parentEl = canvasEl.parentElement;
     if (!parentEl) return;
@@ -345,26 +349,6 @@ export const NeuronCanvas = React.memo(function NeuronCanvas({
     let mouseInside = false;
     let wrongClickFlash = { x: 0, y: 0, time: 0 };
 
-    // Mobile detection — gates perf optimizations without affecting desktop
-    const isMobile = parent.clientWidth < 768;
-
-    // Pre-allocated buffers for zero-allocation neighbor lookups (max 200 neurons)
-    const neighborBuffers: NeighborResult[][] = Array.from({ length: 200 }, () => []);
-    // Per-frame neighbor cache — valid count per neuron, computed once in update(), reused in draw()
-    let neighborCache: number[] = [];
-
-    // Pre-allocated draw structures (reused each frame, never re-created)
-    const neuronMap = new Map<number, Neuron>();
-    const drawnEdges = new Set<number>();
-    const connectionPairs: { i: number; j: number; dist: number }[] = [];
-
-    // Fixed-step physics accumulator (mobile only)
-    let physicsAccumulator = 0;
-    const PHYSICS_STEP = 1 / 60;
-
-    // IntersectionObserver state
-    let isVisible = true;
-
     // Generate unique sprite variants with different color palettes
     const sprites: NeuronSprite[] = [];
     for (let i = 0; i < SPRITE_VARIANTS; i++) {
@@ -372,9 +356,7 @@ export const NeuronCanvas = React.memo(function NeuronCanvas({
     }
 
     function resize() {
-      const rawDpr = window.devicePixelRatio || 1;
-      // Cap DPR to 2 on mobile — saves ~44% pixel ops on 3× DPR phones
-      const dpr = isMobile ? Math.min(rawDpr, 2) : rawDpr;
+      const dpr = window.devicePixelRatio || 1;
       const w = parent.clientWidth;
       const h = parent.clientHeight;
       canvas.width = w * dpr;
@@ -433,8 +415,8 @@ export const NeuronCanvas = React.memo(function NeuronCanvas({
         count = targetCount + decoyCount;
       } else {
         count = 120;
-        if (w < 768) count = 15;
-        else if (w < 1024) count = 40;
+        if (w < 768) count = 30;
+        else if (w < 1024) count = 70;
       }
 
       neurons = [];
@@ -491,11 +473,15 @@ export const NeuronCanvas = React.memo(function NeuronCanvas({
       }
     }
 
-    // Core physics step — extracted so mobile can use fixed-step accumulator
-    function stepPhysics(dt: number) {
+    function update(dt: number) {
       const w = parent.clientWidth;
       const h = parent.clientHeight;
       const timeScale = dt / TARGET_DT;
+
+      // Decay wrong-click flash timer
+      if (wrongClickFlash.time > 0) {
+        wrongClickFlash.time = Math.max(0, wrongClickFlash.time - dt);
+      }
 
       // Dynamic ideal spacing based on canvas area and neuron count
       const idealDist = Math.sqrt((w * h) / neurons.length) * EQUILIBRIUM_FACTOR;
@@ -519,8 +505,10 @@ export const NeuronCanvas = React.memo(function NeuronCanvas({
           const dist = Math.sqrt(distSq) || 0.001; // epsilon guard
 
           // Spring force: pulls toward idealDist equilibrium
+          // displacement > 0 → too far → attract; < 0 → too close → repel
           const displacement = dist - idealDist;
           const normalizedForce = displacement / idealDist;
+          // Taper force to zero at interaction boundary
           const falloff = 1 - (dist / interactionRadius);
           const springForce = normalizedForce * SPRING_STRENGTH * falloff;
 
@@ -552,10 +540,6 @@ export const NeuronCanvas = React.memo(function NeuronCanvas({
       const preset = DIFFICULTY_PRESETS[diff];
       const applyMouseRepulsion = gameActiveRef.current && mouseInside && currentScore >= MOUSE_REPULSION_MIN_SCORE;
 
-      // Use LUT on mobile, native Math on desktop
-      const sinFn = isMobile ? fastSin : Math.sin;
-      const cosFn = isMobile ? fastCos : Math.cos;
-
       for (const n of neurons) {
         // Mouse repulsion force (applied before damping so it gets properly damped)
         if (applyMouseRepulsion) {
@@ -566,6 +550,7 @@ export const NeuronCanvas = React.memo(function NeuronCanvas({
           if (mDistSq < mRadiusSq && mDistSq > 0) {
             const mDist = Math.sqrt(mDistSq);
             const falloff = 1 - mDist / MOUSE_REPULSION_RADIUS;
+            // Quadratic falloff for smoother feel near the edge
             const strength = (preset.base + currentScore * preset.mult) * falloff * falloff;
             n.vx += (mdx / mDist) * strength * timeScale;
             n.vy += (mdy / mDist) * strength * timeScale;
@@ -588,8 +573,8 @@ export const NeuronCanvas = React.memo(function NeuronCanvas({
         n.phaseY += n.freqY * timeScale;
 
         // Reduced wobble amplitude (0.15 instead of 0.3) for stable lattice
-        const totalVx = n.vx + n.groupVx + sinFn(n.phaseX) * 0.15;
-        const totalVy = n.vy + n.groupVy + cosFn(n.phaseY) * 0.15;
+        const totalVx = n.vx + n.groupVx + Math.sin(n.phaseX) * 0.15;
+        const totalVy = n.vy + n.groupVy + Math.cos(n.phaseY) * 0.15;
 
         n.x += totalVx * timeScale;
         n.y += totalVy * timeScale;
@@ -623,9 +608,11 @@ export const NeuronCanvas = React.memo(function NeuronCanvas({
           if (cDistSq < radius * radius && cDistSq > 0) {
             const cDist = Math.sqrt(cDistSq);
             const overlap = radius - cDist;
+            // Push neuron out of wall
             n.x += (cdx / cDist) * overlap;
             n.y += (cdy / cDist) * overlap;
 
+            // Reflect velocity against collision normal
             const nx = cdx / cDist;
             const ny = cdy / cDist;
             const dotV = n.vx * nx + n.vy * ny;
@@ -637,39 +624,12 @@ export const NeuronCanvas = React.memo(function NeuronCanvas({
           }
         }
       }
-    }
 
-    function update(dtSec: number) {
-      // Decay wrong-click flash timer
-      if (wrongClickFlash.time > 0) {
-        wrongClickFlash.time = Math.max(0, wrongClickFlash.time - dtSec);
-      }
-
-      // Fixed-step physics on mobile (cap at 60fps), variable on desktop
-      if (isMobile) {
-        physicsAccumulator += dtSec;
-        while (physicsAccumulator >= PHYSICS_STEP) {
-          stepPhysics(PHYSICS_STEP);
-          physicsAccumulator -= PHYSICS_STEP;
-        }
-      } else {
-        stepPhysics(dtSec);
-      }
-
-      // Rebuild neighbor cache ONCE per frame — reused for sparks here and connections in draw()
+      // Spawn sparks on connected pairs
+      const sparkChance = 1 - Math.pow(1 - SPARK_CHANCE_PER_SEC, dt);
       for (let i = 0; i < neurons.length; i++) {
-        neighborCache[i] = closestNeighbors(
-          neurons, i, CONNECTION_DIST_SQ, MAX_CONNECTIONS_PER_NEURON, neighborBuffers[i]
-        );
-      }
-
-      // Spawn sparks on connected pairs (using cached neighbors)
-      const sparkChance = 1 - Math.pow(1 - SPARK_CHANCE_PER_SEC, dtSec);
-      for (let i = 0; i < neurons.length; i++) {
-        const count = neighborCache[i];
-        const buffer = neighborBuffers[i];
-        for (let k = 0; k < count; k++) {
-          const j = buffer[k].j;
+        const neighbors = closestNeighbors(neurons, i, CONNECTION_DIST, MAX_CONNECTIONS_PER_NEURON);
+        for (const { j } of neighbors) {
           if (j > i && Math.random() < sparkChance) {
             sparks.push({
               fromId: Math.random() > 0.5 ? neurons[i].id : neurons[j].id,
@@ -683,7 +643,7 @@ export const NeuronCanvas = React.memo(function NeuronCanvas({
       }
 
       for (let i = sparks.length - 1; i >= 0; i--) {
-        sparks[i].progress += sparks[i].speed * dtSec;
+        sparks[i].progress += sparks[i].speed * dt;
         if (sparks[i].progress >= 1) sparks.splice(i, 1);
       }
     }
@@ -696,42 +656,31 @@ export const NeuronCanvas = React.memo(function NeuronCanvas({
       const isGameActive = gameActiveRef.current;
       const targetIdx = targetPaletteIdxRef.current;
 
-      // Rebuild neuron lookup map (reuse pre-allocated Map — zero allocation)
-      neuronMap.clear();
+      // Build neuron lookup map (O(1) access for spark rendering)
+      const neuronMap = new Map<number, Neuron>();
       for (const n of neurons) {
         neuronMap.set(n.id, n);
       }
 
-      // Build connection set from cached neighbors (true object pool — zero allocation)
-      drawnEdges.clear();
-      let activeConnections = 0;
+      // Build connection set (each neuron → closest 3)
+      // Use a Set to avoid drawing the same edge twice
+      const drawnEdges = new Set<string>();
+      const connectionPairs: { i: number; j: number; dist: number }[] = [];
 
       for (let i = 0; i < neurons.length; i++) {
-        const count = neighborCache[i];
-        const buffer = neighborBuffers[i];
-        for (let k = 0; k < count; k++) {
-          const j = buffer[k].j;
-          const dist = buffer[k].dist;
-          // Numeric edge key: no string allocation (max 999 neurons)
-          const edgeKey = Math.min(i, j) * 1000 + Math.max(i, j);
-          if (!drawnEdges.has(edgeKey)) {
-            drawnEdges.add(edgeKey);
-            if (activeConnections >= connectionPairs.length) {
-              // Pool exhausted — allocate once, reused forever after
-              connectionPairs.push({ i, j, dist });
-            } else {
-              const slot = connectionPairs[activeConnections];
-              slot.i = i; slot.j = j; slot.dist = dist;
-            }
-            activeConnections++;
+        const neighbors = closestNeighbors(neurons, i, CONNECTION_DIST, MAX_CONNECTIONS_PER_NEURON);
+        for (const { j, dist } of neighbors) {
+          const key = i < j ? `${i}-${j}` : `${j}-${i}`;
+          if (!drawnEdges.has(key)) {
+            drawnEdges.add(key);
+            connectionPairs.push({ i, j, dist });
           }
         }
       }
 
       // 1. Draw connections — double-stroke: thick palette glow + thin white core
       ctx.globalAlpha = 1;
-      for (let p = 0; p < activeConnections; p++) {
-        const { i, j, dist } = connectionPairs[p];
+      for (const { i, j, dist } of connectionPairs) {
         const a = neurons[i];
         const b = neurons[j];
         const minDepth = Math.min(a.depth, b.depth);
@@ -936,7 +885,6 @@ export const NeuronCanvas = React.memo(function NeuronCanvas({
     }
 
     function animate(time: number) {
-      if (!isVisible) return; // Paused by IntersectionObserver
       if (lastTime === 0) lastTime = time;
       const dtMs = Math.min(time - lastTime, 50);
       lastTime = time;
@@ -944,18 +892,6 @@ export const NeuronCanvas = React.memo(function NeuronCanvas({
       update(dtMs / 1000);
       draw(animTime);
       animId = requestAnimationFrame(animate);
-    }
-
-    function startAnimation() {
-      if (isVisible) return; // Already running
-      isVisible = true;
-      lastTime = 0; // Reset to avoid huge dt jump after pause
-      animId = requestAnimationFrame(animate);
-    }
-
-    function stopAnimation() {
-      isVisible = false;
-      cancelAnimationFrame(animId);
     }
 
     function onMouseMove(e: MouseEvent) {
@@ -1016,33 +952,19 @@ export const NeuronCanvas = React.memo(function NeuronCanvas({
     }
 
     canvas.addEventListener("click", onClick);
-    parent.addEventListener("mousemove", onMouseMove, { passive: true });
-    parent.addEventListener("mouseleave", onMouseLeave, { passive: true });
+    parent.addEventListener("mousemove", onMouseMove);
+    parent.addEventListener("mouseleave", onMouseLeave);
 
     resize();
     initNeurons();
     animId = requestAnimationFrame(animate);
 
-    const resizeObs = new ResizeObserver(resize);
-    resizeObs.observe(parent);
-
-    // Pause animation when canvas scrolls off-screen (CPU → 0%, saves battery)
-    const visibilityObs = new IntersectionObserver(
-      ([entry]) => {
-        if (entry.isIntersecting) {
-          startAnimation();
-        } else {
-          stopAnimation();
-        }
-      },
-      { threshold: 0.05 } // Trigger when 5% visible
-    );
-    visibilityObs.observe(parent);
+    const observer = new ResizeObserver(resize);
+    observer.observe(parent);
 
     return () => {
       cancelAnimationFrame(animId);
-      resizeObs.disconnect();
-      visibilityObs.disconnect();
+      observer.disconnect();
       canvas.removeEventListener("click", onClick);
       parent.removeEventListener("mousemove", onMouseMove);
       parent.removeEventListener("mouseleave", onMouseLeave);
@@ -1056,4 +978,4 @@ export const NeuronCanvas = React.memo(function NeuronCanvas({
       style={{ zIndex: 1 }}
     />
   );
-});
+}

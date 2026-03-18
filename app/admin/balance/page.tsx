@@ -42,7 +42,7 @@ export default async function BalancePage({ searchParams }: Props) {
   ]);
 
   return (
-    <div className="max-w-6xl mx-auto p-3 md:p-6">
+    <div className="max-w-6xl mx-auto p-6">
       <h1 className="text-2xl font-bold mb-2">
         Balance Mensual &mdash; {MONTH_NAMES[month]} {year}
       </h1>

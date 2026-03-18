@@ -257,23 +257,10 @@ See [19_implementation.md](memory/19_implementation.md) for full details.
 See [20_implementation.md](memory/20_implementation.md) for full details.
 
 - Web performance: lazy-loading (ChatBubble, Recharts), ISR, Image optimization, unstable_cache on dashboard queries, narrowed revalidatePath, Prisma select, streaming skeletons
-- Unit tests: Vitest + happy-dom, 21 tests (password validation + login redirect + closestNeighbors)
+- Unit tests: Vitest + happy-dom, 19 tests (password validation + login redirect)
 - CI: GitHub Actions — security audit + unit tests on push/PR (Node 20)
 - Makefile: dev, prod, test, security, Docker targets
 - AI migration: Gemini removed entirely, image analysis uses Claude Vision (`claude-sonnet-4`), chat has Claude + OpenAI
-
-## Mobile Performance & Layout Optimization
-
-See [21_implementation.md](memory/21_implementation.md) for full details.
-
-- Neuron canvas: zero-allocation neighbor lookup (`lib/closest-neighbors.ts`), `distSq` early rejection, insertion buffer, per-frame neighbor cache
-- Mobile-gated optimizations (desktop unchanged): neuron count 30→15, DPR cap 2, fixed-step 60fps physics, sin/cos LUT
-- Zero-allocation draw loop: pre-allocated `Map`/`Set`/object pool, numeric edge keys, `activeConnections` counter
-- `IntersectionObserver` pauses animation off-screen (CPU → 0%), `{ passive: true }` listeners, `React.memo`, `desynchronized: true` canvas context
-- Admin navbar: hamburger menu for mobile (`components/nav-bar.tsx`), mirrors public navbar pattern
-- Tables: `text-xs md:text-sm`, `whitespace-nowrap`, responsive padding/min-widths on balance + revenue matrix
-- Admin pages: `p-3 md:p-6` on all 7 page containers
-- Tab animation: `translate3d` GPU compositing + `will-change-[opacity,transform]`
 
 ## Docker & Deployment
 

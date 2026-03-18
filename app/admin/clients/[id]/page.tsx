@@ -39,7 +39,7 @@ export default async function ClientDetailPage({ params }: Props) {
   if (!client) notFound();
 
   return (
-    <div className="max-w-5xl mx-auto p-3 md:p-6 space-y-8">
+    <div className="max-w-5xl mx-auto p-6 space-y-8">
       {/* Back link */}
       <Link
         href="/admin/clients"

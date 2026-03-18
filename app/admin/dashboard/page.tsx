@@ -35,7 +35,7 @@ export default async function DashboardPage({ searchParams }: Props) {
   const unreadCount = allSuggestions.filter((s: { status: string }) => s.status === "unread").length;
 
   return (
-    <div className="max-w-7xl mx-auto p-3 md:p-6 space-y-8">
+    <div className="max-w-7xl mx-auto p-6 space-y-8">
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-xl font-bold text-gray-800">Dashboard</h1>
