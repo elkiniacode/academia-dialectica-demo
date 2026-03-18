@@ -8,7 +8,7 @@ export default async function ClientsPage() {
   const clients = await getClients();
 
   return (
-    <div className="max-w-7xl mx-auto p-6">
+    <div className="max-w-7xl mx-auto p-3 md:p-6">
       <h1 className="text-2xl font-bold mb-2">Clientes</h1>
       <p className="text-sm text-gray-500 mb-6 max-w-3xl">
         Aquí encuentras la información importante de cada cliente: datos de

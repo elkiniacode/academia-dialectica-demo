@@ -39,18 +39,18 @@ export function RevenueMatrix({ matrix }: Props) {
         Ingresos por Cliente / Mes
       </h3>
       <div className="overflow-x-auto p-4 pt-3">
-        <table className="w-full border-collapse border border-gray-300 text-sm">
+        <table className="w-full border-collapse border border-gray-300 text-xs md:text-sm whitespace-nowrap">
           <thead>
             <tr className="bg-blue-600 text-white">
-              <th className="border border-blue-500 px-3 py-2 text-left sticky left-0 bg-blue-600 z-10 border-r-2 border-r-blue-400 min-w-[140px]">
+              <th className="border border-blue-500 px-2 py-1.5 md:px-3 md:py-2 text-left sticky left-0 bg-blue-600 z-10 border-r-2 border-r-blue-400 min-w-[100px] md:min-w-[140px]">
                 Cliente
               </th>
               {activeMonths.map((m) => (
-                <th key={m.index} className="border border-blue-500 px-3 py-2 text-right min-w-[110px]">
+                <th key={m.index} className="border border-blue-500 px-2 py-1.5 md:px-3 md:py-2 text-right min-w-[80px] md:min-w-[110px]">
                   {MONTH_SHORT[m.index]}
                 </th>
               ))}
-              <th className="border border-blue-500 px-3 py-2 text-right min-w-[120px]">
+              <th className="border border-blue-500 px-2 py-1.5 md:px-3 md:py-2 text-right min-w-[120px]">
                 Total
               </th>
             </tr>
@@ -60,18 +60,18 @@ export function RevenueMatrix({ matrix }: Props) {
               const rowBg = i % 2 === 0 ? "bg-white" : "bg-gray-50";
               return (
                 <tr key={client} className={`${rowBg} hover:bg-blue-50/50 transition-colors group`}>
-                  <td className={`border border-gray-300 px-3 py-2 font-medium sticky left-0 z-10 border-r-2 border-r-gray-200 ${rowBg} group-hover:bg-blue-50/50`}>
+                  <td className={`border border-gray-300 px-2 py-1.5 md:px-3 md:py-2 font-medium sticky left-0 z-10 border-r-2 border-r-gray-200 ${rowBg} group-hover:bg-blue-50/50`}>
                     {client}
                   </td>
                   {activeMonths.map((m) => {
                     const val = matrix.data[client][m.index];
                     return (
-                      <td key={m.index} className="border border-gray-300 px-3 py-2 text-right">
+                      <td key={m.index} className="border border-gray-300 px-2 py-1.5 md:px-3 md:py-2 text-right">
                         {val > 0 ? formatCOP(val) : "—"}
                       </td>
                     );
                   })}
-                  <td className="border border-gray-300 px-3 py-2 text-right font-medium">
+                  <td className="border border-gray-300 px-2 py-1.5 md:px-3 md:py-2 text-right font-medium">
                     {formatCOP(matrix.clientTotals[client])}
                   </td>
                 </tr>
@@ -80,15 +80,15 @@ export function RevenueMatrix({ matrix }: Props) {
           </tbody>
           <tfoot>
             <tr className="bg-yellow-100 font-bold">
-              <td className="border border-gray-300 px-3 py-2 text-right sticky left-0 bg-yellow-100 z-10 border-r-2 border-r-gray-200">
+              <td className="border border-gray-300 px-2 py-1.5 md:px-3 md:py-2 text-right sticky left-0 bg-yellow-100 z-10 border-r-2 border-r-gray-200">
                 TOTAL
               </td>
               {activeMonths.map((m) => (
-                <td key={m.index} className="border border-gray-300 px-3 py-2 text-right">
+                <td key={m.index} className="border border-gray-300 px-2 py-1.5 md:px-3 md:py-2 text-right">
                   {formatCOP(matrix.monthTotals[m.index])}
                 </td>
               ))}
-              <td className="border border-gray-300 px-3 py-2 text-right">
+              <td className="border border-gray-300 px-2 py-1.5 md:px-3 md:py-2 text-right">
                 {formatCOP(matrix.grandTotal)}
               </td>
             </tr>

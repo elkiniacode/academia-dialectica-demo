@@ -56,7 +56,7 @@ export function ModalitiesSection() {
         {/* Content panel — key forces fade animation on tab switch */}
         <div
           key={activeTab}
-          className="bg-white rounded-2xl p-8 md:p-12 shadow-xl shadow-blue-900/10 border border-blue-100 border-t-4 border-t-blue-500 text-left max-w-3xl mx-auto animate-[fadeIn_0.5s_ease-out]"
+          className="bg-white rounded-2xl p-8 md:p-12 shadow-xl shadow-blue-900/10 border border-blue-100 border-t-4 border-t-blue-500 text-left max-w-3xl mx-auto animate-[fadeIn_0.5s_ease-out] will-change-[opacity,transform]"
         >
           <h3 className="text-xl md:text-2xl font-bold tracking-tight text-gray-900 mb-4">
             {TABS[activeTab].title}
