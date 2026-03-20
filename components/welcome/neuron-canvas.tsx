@@ -354,6 +354,9 @@ export function NeuronCanvas({
     const drawnEdges = new Set<number>();
     const connectionPairs: { i: number; j: number; dist: number }[] = [];
 
+    // Neighbor cache — built once per frame after forces, shared by update() and draw()
+    let neighborCache: { j: number; dist: number }[][] = [];
+
     // Fixed-step physics accumulator (60fps cap)
     const PHYSICS_STEP = 1 / 60;
     let physicsAccum = 0;
@@ -635,10 +638,13 @@ export function NeuronCanvas({
         }
       }
 
+      // Rebuild neighbor cache once after all forces — reused by draw() this frame
+      neighborCache = neurons.map((_, i) => closestNeighbors(neurons, i, CONNECTION_DIST, MAX_CONNECTIONS_PER_NEURON));
+
       // Spawn sparks on connected pairs
       const sparkChance = 1 - Math.pow(1 - SPARK_CHANCE_PER_SEC, dt);
       for (let i = 0; i < neurons.length; i++) {
-        const neighbors = closestNeighbors(neurons, i, CONNECTION_DIST, MAX_CONNECTIONS_PER_NEURON);
+        const neighbors = neighborCache[i];
         for (const { j } of neighbors) {
           if (j > i && Math.random() < sparkChance) {
             sparks.push({
@@ -678,7 +684,7 @@ export function NeuronCanvas({
       connectionPairs.length = 0;
 
       for (let i = 0; i < neurons.length; i++) {
-        const neighbors = closestNeighbors(neurons, i, CONNECTION_DIST, MAX_CONNECTIONS_PER_NEURON);
+        const neighbors = neighborCache[i] ?? [];
         for (const { j, dist } of neighbors) {
           const lo = Math.min(i, j);
           const hi = Math.max(i, j);
