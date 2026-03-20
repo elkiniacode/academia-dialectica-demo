@@ -349,6 +349,15 @@ export function NeuronCanvas({
     let mouseInside = false;
     let wrongClickFlash = { x: 0, y: 0, time: 0 };
 
+    // Pre-allocated draw loop structures (reused every frame, zero allocation)
+    const neuronMap = new Map<number, Neuron>();
+    const drawnEdges = new Set<number>();
+    const connectionPairs: { i: number; j: number; dist: number }[] = [];
+
+    // Fixed-step physics accumulator (60fps cap)
+    const PHYSICS_STEP = 1 / 60;
+    let physicsAccum = 0;
+
     // Generate unique sprite variants with different color palettes
     const sprites: NeuronSprite[] = [];
     for (let i = 0; i < SPRITE_VARIANTS; i++) {
@@ -356,7 +365,8 @@ export function NeuronCanvas({
     }
 
     function resize() {
-      const dpr = window.devicePixelRatio || 1;
+      const rawDpr = window.devicePixelRatio || 1;
+      const dpr = parent.clientWidth < 768 ? Math.min(rawDpr, 2) : rawDpr;
       const w = parent.clientWidth;
       const h = parent.clientHeight;
       canvas.width = w * dpr;
@@ -415,8 +425,8 @@ export function NeuronCanvas({
         count = targetCount + decoyCount;
       } else {
         count = 120;
-        if (w < 768) count = 30;
-        else if (w < 1024) count = 70;
+        if (w < 768) count = 20;
+        else if (w < 1024) count = 50;
       }
 
       neurons = [];
@@ -656,21 +666,23 @@ export function NeuronCanvas({
       const isGameActive = gameActiveRef.current;
       const targetIdx = targetPaletteIdxRef.current;
 
-      // Build neuron lookup map (O(1) access for spark rendering)
-      const neuronMap = new Map<number, Neuron>();
+      // Build neuron lookup map (O(1) access for spark rendering) — reuse pre-allocated map
+      neuronMap.clear();
       for (const n of neurons) {
         neuronMap.set(n.id, n);
       }
 
-      // Build connection set (each neuron → closest 3)
-      // Use a Set to avoid drawing the same edge twice
-      const drawnEdges = new Set<string>();
-      const connectionPairs: { i: number; j: number; dist: number }[] = [];
+      // Build connection set (each neuron → closest 3) — reuse pre-allocated structures
+      // Numeric edge key: min*1000+max avoids string allocation (safe for ≤1000 neurons)
+      drawnEdges.clear();
+      connectionPairs.length = 0;
 
       for (let i = 0; i < neurons.length; i++) {
         const neighbors = closestNeighbors(neurons, i, CONNECTION_DIST, MAX_CONNECTIONS_PER_NEURON);
         for (const { j, dist } of neighbors) {
-          const key = i < j ? `${i}-${j}` : `${j}-${i}`;
+          const lo = Math.min(i, j);
+          const hi = Math.max(i, j);
+          const key = lo * 1000 + hi;
           if (!drawnEdges.has(key)) {
             drawnEdges.add(key);
             connectionPairs.push({ i, j, dist });
@@ -889,7 +901,14 @@ export function NeuronCanvas({
       const dtMs = Math.min(time - lastTime, 50);
       lastTime = time;
       animTime += dtMs;
-      update(dtMs / 1000);
+
+      // Fixed-step physics at 60fps regardless of display refresh rate
+      physicsAccum += dtMs / 1000;
+      while (physicsAccum >= PHYSICS_STEP) {
+        update(PHYSICS_STEP);
+        physicsAccum -= PHYSICS_STEP;
+      }
+
       draw(animTime);
       animId = requestAnimationFrame(animate);
     }
@@ -952,19 +971,36 @@ export function NeuronCanvas({
     }
 
     canvas.addEventListener("click", onClick);
-    parent.addEventListener("mousemove", onMouseMove);
-    parent.addEventListener("mouseleave", onMouseLeave);
+    parent.addEventListener("mousemove", onMouseMove, { passive: true });
+    parent.addEventListener("mouseleave", onMouseLeave, { passive: true });
 
     resize();
     initNeurons();
     animId = requestAnimationFrame(animate);
 
-    const observer = new ResizeObserver(resize);
-    observer.observe(parent);
+    const resizeObserver = new ResizeObserver(resize);
+    resizeObserver.observe(parent);
+
+    // IntersectionObserver — pause animation when canvas is off-screen (CPU → 0%)
+    let isVisible = true;
+    const intersectionObserver = new IntersectionObserver(
+      ([entry]) => {
+        isVisible = entry.isIntersecting;
+        if (isVisible) {
+          lastTime = 0; // reset to avoid huge dt jump
+          animId = requestAnimationFrame(animate);
+        } else {
+          cancelAnimationFrame(animId);
+        }
+      },
+      { threshold: 0 }
+    );
+    intersectionObserver.observe(parent);
 
     return () => {
       cancelAnimationFrame(animId);
-      observer.disconnect();
+      resizeObserver.disconnect();
+      intersectionObserver.disconnect();
       canvas.removeEventListener("click", onClick);
       parent.removeEventListener("mousemove", onMouseMove);
       parent.removeEventListener("mouseleave", onMouseLeave);
