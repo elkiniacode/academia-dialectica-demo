@@ -242,3 +242,48 @@ export async function deleteClient(id: string): Promise<ClientResult> {
   await prisma.client.delete({ where: { id } });
   return { success: true };
 }
+
+export async function changePassword(
+  newPassword: string
+): Promise<ClientResult> {
+  const session = await auth();
+  if (!session || session.role !== "CLIENT" || !session.userId)
+    return { success: false, error: "No autorizado" };
+
+  const validationError = validatePassword(newPassword);
+  if (validationError) return { success: false, error: validationError };
+
+  const hashed = await hashPassword(newPassword);
+
+  await prisma.client.update({
+    where: { id: session.userId },
+    data: { password: hashed, requirePasswordChange: false },
+  });
+
+  return { success: true };
+}
+
+export async function updateUsername(
+  newUsername: string
+): Promise<ClientResult> {
+  const session = await auth();
+  if (!session || session.role !== "CLIENT" || !session.userId)
+    return { success: false, error: "No autorizado" };
+
+  const username = newUsername.trim().toLowerCase();
+  if (!username || username.length < 3)
+    return { success: false, error: "El usuario debe tener al menos 3 caracteres" };
+
+  try {
+    await prisma.client.update({
+      where: { id: session.userId },
+      data: { username },
+    });
+    return { success: true };
+  } catch (error: unknown) {
+    if (error && typeof error === "object" && "code" in error && error.code === "P2002") {
+      return { success: false, error: "Ese nombre de usuario ya está en uso" };
+    }
+    return { success: false, error: "Error al actualizar el usuario" };
+  }
+}

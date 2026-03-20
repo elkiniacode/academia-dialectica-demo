@@ -70,6 +70,16 @@ export const authConfig = {
         return Response.redirect(new URL("/login", request.url));
       }
 
+      // Force password change for auto-created clients on first login
+      if (
+        isClient &&
+        auth?.role === "CLIENT" &&
+        auth?.requirePasswordChange === true &&
+        !pathname.startsWith("/client/change-password")
+      ) {
+        return Response.redirect(new URL("/client/change-password", request.url));
+      }
+
       return true;
     },
     async jwt({ token, account, user }) {
@@ -91,13 +101,14 @@ export const authConfig = {
         }
 
         if (account.provider === "credentials") {
-          const u = user as { role: string; characterClass?: string | null; level?: number };
+          const u = user as { role: string; characterClass?: string | null; level?: number; requirePasswordChange?: boolean };
           return {
             ...token,
             role: u.role,
             userId: user.id,
             characterClass: u.characterClass ?? undefined,
             level: u.level,
+            requirePasswordChange: u.requirePasswordChange ?? false,
           };
         }
       }
@@ -123,6 +134,7 @@ export const authConfig = {
       session.userId = token.userId as string;
       session.characterClass = token.characterClass as string | undefined;
       session.level = token.level as number | undefined;
+      session.requirePasswordChange = token.requirePasswordChange as boolean | undefined;
       if (token.error) {
         (session as { error?: string }).error = token.error as string;
       }

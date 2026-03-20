@@ -28,9 +28,10 @@ model Client {
   hp             Int            @default(100)
   xp             Int            @default(0)
   level          Int            @default(1)
-  characterName  String?
-  characterClass String?
-  createdAt      DateTime       @default(now())
+  characterName          String?
+  characterClass         String?
+  requirePasswordChange  Boolean        @default(false)
+  createdAt              DateTime       @default(now())
   updatedAt      DateTime       @updatedAt @default(now())
   sessions       Session[]
   balanceEntries BalanceEntry[]
@@ -104,14 +105,16 @@ model Story {
 }
 
 model Lead {
-  id         String   @id @default(uuid()) @db.Uuid
-  number     Int      @unique @default(autoincrement())
-  name       String
-  email      String   @unique
-  phone      String?
-  gameScore  Int?
-  difficulty String?
-  createdAt  DateTime @default(now())
+  id             String    @id @default(uuid()) @db.Uuid
+  number         Int       @unique @default(autoincrement())
+  name           String
+  email          String    @unique
+  phone          String?
+  gameScore      Int?
+  difficulty     String?
+  characterClass String?
+  processedAt    DateTime?
+  createdAt      DateTime  @default(now())
 
   @@map("leads")
 }

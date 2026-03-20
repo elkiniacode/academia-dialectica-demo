@@ -432,6 +432,10 @@ export function NeuronCanvas({
         else if (w < 1024) count = 50;
       }
 
+      // Scale neuron sizes proportionally to container — avoids oversized neurons on small screens
+      const minDim = Math.min(w, h);
+      const scaleFactor = Math.min(1, minDim / 600); // 1.0 at 600px+, 0.6 at 360px
+
       neurons = [];
       for (let i = 0; i < count; i++) {
         // ~30% of neurons are in the background layer
@@ -454,7 +458,7 @@ export function NeuronCanvas({
           y: Math.random() * h,
           vx: (Math.random() - 0.5) * 0.35 * depth,
           vy: (Math.random() - 0.5) * 0.35 * depth,
-          drawSize: (25 + Math.random() * 75) * depth, // 25-100px range
+          drawSize: (25 + Math.random() * 75) * depth * scaleFactor, // scaled to container
           spriteIdx,
           rotation: Math.random() * Math.PI * 2,
           phaseX: Math.random() * Math.PI * 2,

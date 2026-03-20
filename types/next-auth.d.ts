@@ -7,6 +7,7 @@ declare module "next-auth" {
     userId: string;
     characterClass?: string;
     level?: number;
+    requirePasswordChange?: boolean;
   }
 }
 
@@ -19,5 +20,6 @@ declare module "next-auth/jwt" {
     userId?: string;
     characterClass?: string;
     level?: number;
+    requirePasswordChange?: boolean;
   }
 }

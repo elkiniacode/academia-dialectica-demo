@@ -32,10 +32,23 @@ export function HeroSection() {
   const [finalCerebritos, setFinalCerebritos] = useState(0);
   const [selectedClass, setSelectedClass] = useState<string | null>(null);
   const [showClassModal, setShowClassModal] = useState(false);
+  const [isLandscape, setIsLandscape] = useState(false);
+  const [formMode, setFormMode] = useState<"game" | "standalone">("game");
+  const [gameCharacterClass, setGameCharacterClass] = useState<string | null>(null);
+  const [showCharacterStep, setShowCharacterStep] = useState(false);
 
   const difficultyRef = useRef(difficulty);
   const timeLeftRef = useRef(timeLeft);
   const scoreRef = useRef(score);
+
+  // Detect phone landscape (max-height: 500px excludes tablets/desktops)
+  useEffect(() => {
+    const mql = window.matchMedia("(orientation: landscape) and (max-height: 500px)");
+    const handler = (e: MediaQueryListEvent | MediaQueryList) => setIsLandscape(e.matches);
+    handler(mql);
+    mql.addEventListener("change", handler);
+    return () => mql.removeEventListener("change", handler);
+  }, []);
 
   useLayoutEffect(() => {
     difficultyRef.current = difficulty;
@@ -69,19 +82,25 @@ export function HeroSection() {
     const email = formData.get("email") as string;
     const phone = formData.get("phone") as string;
 
+    // Only attach game stats when the form was opened from a game win
+    const leadData = {
+      name,
+      email,
+      phone,
+      gameScore: formMode === "game" ? finalCerebritos : undefined,
+      difficulty: formMode === "game" ? difficulty : undefined,
+      characterClass: formMode === "game" ? (gameCharacterClass ?? undefined) : undefined,
+    };
+
     const [result] = await Promise.all([
-      createLead({
-        name,
-        email,
-        phone,
-        gameScore: finalCerebritos,
-        difficulty,
-      }),
+      createLead(leadData),
       new Promise((r) => setTimeout(r, 600)),
     ]);
 
     if (result.success) {
       setFormSubmitted(true);
+      // Refresh canvas to ambient state as soon as the game flow is done
+      setGameSessionId((prev) => prev + 1);
     } else {
       setErrorMsg(result.error || "Error inesperado.");
     }
@@ -102,6 +121,9 @@ export function HeroSection() {
     setFormSubmitted(false);
     setShowRules(false);
     setErrorMsg("");
+    setShowCharacterStep(false);
+    setGameCharacterClass(null);
+    setFormMode("game");
     setGameSessionId((prev) => prev + 1);
   }, []);
 
@@ -205,21 +227,27 @@ export function HeroSection() {
               >
                 Empieza el Juego
               </button>
-              <a
-                href="#testimonios"
+              <button
+                onClick={() => {
+                  setFormMode("standalone");
+                  setFormSubmitted(false);
+                  setShowForm(true);
+                }}
                 className="bg-white text-gray-900 text-center border border-gray-200 rounded-full px-8 py-3 font-semibold shadow-sm hover:shadow-md hover:-translate-y-1 transition-all duration-300"
               >
                 Conoce Más
-              </a>
+              </button>
             </div>
           </div>
         )}
 
         {/* RIGHT COLUMN: The Floating Game Container */}
         <div
-          className={`relative w-full aspect-square lg:aspect-auto lg:h-[600px] rounded-[2.5rem] overflow-hidden shadow-2xl shadow-blue-900/20 ring-1 ring-gray-900/5 bg-gradient-to-br from-blue-600 via-blue-700 to-indigo-800 transition-all duration-500 ease-in-out ${
+          className={`relative w-full rounded-[2.5rem] overflow-hidden shadow-2xl shadow-blue-900/20 ring-1 ring-gray-900/5 bg-gradient-to-br from-blue-600 via-blue-700 to-indigo-800 transition-all duration-500 ease-in-out ${
+            isLandscape ? 'aspect-auto h-[70vh]' : 'aspect-square'
+          } lg:aspect-auto lg:h-[600px] ${
             gameActive || showRules || gameOver || gameComplete
-              ? 'lg:col-span-2 lg:h-[80vh] lg:max-h-[700px]'
+              ? `lg:col-span-2 lg:h-[80vh] lg:max-h-[700px]${isLandscape ? ' h-[75vh]' : ''}`
               : ''
           }`}
         >
@@ -237,18 +265,18 @@ export function HeroSection() {
           {/* LAYER 2: Game HUD (Trapped inside the relative container) */}
           {gameActive && targetPaletteIdx !== null && (
             <div
-              className="absolute top-8 left-1/2 -translate-x-1/2 w-[90%] md:w-auto bg-white/10 backdrop-blur-md px-4 py-3 md:px-6 rounded-3xl md:rounded-full border border-white/20 text-white flex flex-wrap items-center justify-center gap-2 md:gap-4 shadow-xl"
+              className={`absolute left-1/2 -translate-x-1/2 w-[95%] md:w-auto bg-white/10 backdrop-blur-md px-2 sm:px-4 md:px-6 rounded-2xl md:rounded-full border border-white/20 text-white flex flex-wrap items-center justify-center gap-1 sm:gap-2 md:gap-4 shadow-xl text-xs sm:text-sm ${isLandscape ? 'top-2 py-1' : 'top-4 sm:top-8 py-2 sm:py-3'}`}
               style={{ zIndex: 20 }}
             >
               <span className="font-semibold">Objetivo:</span>
-              <span className="text-xl font-bold tracking-wider uppercase">
+              <span className="text-base sm:text-xl font-bold tracking-wider uppercase">
                 {PALETTE_NAMES[targetPaletteIdx]}
               </span>
-              <span className="bg-white text-blue-900 px-3 py-1 rounded-full text-sm font-bold">
+              <span className="bg-white text-blue-900 px-2 py-0.5 sm:px-3 sm:py-1 rounded-full text-[11px] sm:text-sm font-bold">
                 Puntos: {score}
               </span>
               <span
-                className={`px-3 py-1 rounded-full text-sm font-bold tabular-nums ${
+                className={`px-2 py-0.5 sm:px-3 sm:py-1 rounded-full text-[11px] sm:text-sm font-bold tabular-nums ${
                   timeLeft <= 30
                     ? "bg-red-500/70 text-white animate-pulse"
                     : "bg-blue-500/50 text-white"
@@ -257,7 +285,7 @@ export function HeroSection() {
                 {timerMinutes}:{timerSeconds}
               </span>
               {remaining > 0 && (
-                <span className="bg-blue-500/50 px-3 py-1 rounded-full text-sm font-bold">
+                <span className="bg-blue-500/50 px-2 py-0.5 sm:px-3 sm:py-1 rounded-full text-[11px] sm:text-sm font-bold">
                   Faltan: {remaining}
                 </span>
               )}
@@ -375,7 +403,7 @@ export function HeroSection() {
       )}
 
       {/* Completion modal */}
-      {gameComplete && (
+      {(gameComplete || (formMode === "standalone" && (showForm || formSubmitted))) && (
         <div className="fixed inset-0 flex items-center justify-center bg-gray-900/80 backdrop-blur-sm p-4 overflow-y-auto" style={{ zIndex: 60 }}>
           <div className="bg-white p-8 md:p-10 rounded-3xl max-w-lg w-full text-center shadow-2xl ring-1 ring-gray-900/5 my-auto">
             {formSubmitted ? (
@@ -389,20 +417,29 @@ export function HeroSection() {
                 <p className="text-gray-600 mb-8 leading-relaxed">
                   Tus datos han sido enviados. Nos pondremos en contacto contigo muy pronto.
                 </p>
-                <button
-                  onClick={() => {
-                    setGameComplete(false);
-                    setShowRules(true);
-                  }}
-                  className="w-full bg-gray-100 hover:bg-gray-200 text-gray-900 font-bold py-4 rounded-xl transition-colors"
-                >
-                  Jugar de Nuevo
-                </button>
+                {formMode === "game" ? (
+                  <button
+                    onClick={() => {
+                      setGameComplete(false);
+                      setShowRules(true);
+                    }}
+                    className="w-full bg-gray-100 hover:bg-gray-200 text-gray-900 font-bold py-4 rounded-xl transition-colors"
+                  >
+                    Jugar de Nuevo
+                  </button>
+                ) : (
+                  <button
+                    onClick={() => { setShowForm(false); setFormSubmitted(false); setFormMode("game"); }}
+                    className="w-full bg-gray-100 hover:bg-gray-200 text-gray-900 font-bold py-4 rounded-xl transition-colors"
+                  >
+                    Cerrar
+                  </button>
+                )}
               </div>
             ) : showForm ? (
               <div className="animate-[fadeIn_0.5s_ease-out]">
                 <h2 className="text-3xl font-bold tracking-tight text-gray-900 mb-2">
-                  Reclama tu Premio
+                  {formMode === "standalone" ? "Regístrate para más información" : "Reclama tu Premio"}
                 </h2>
                 <p className="text-gray-500 mb-8">Ingresa tus datos para continuar.</p>
 
@@ -438,8 +475,48 @@ export function HeroSection() {
                   </button>
                 </form>
                 <button
-                  onClick={() => { setShowForm(false); setErrorMsg(""); }}
+                  onClick={() => {
+                    setShowForm(false);
+                    setErrorMsg("");
+                    if (formMode === "standalone") setFormMode("game");
+                  }}
                   className="mt-6 text-sm font-semibold text-gray-500 hover:text-blue-600 transition-colors"
+                >
+                  ← Atrás
+                </button>
+              </div>
+            ) : showCharacterStep ? (
+              /* Character selection step — shown between score display and form */
+              <div className="animate-[fadeIn_0.5s_ease-out]">
+                <h2 className="text-2xl font-bold tracking-tight text-gray-900 mb-2">
+                  Para ratificar el personaje que quieres, escoge:
+                </h2>
+                <p className="text-gray-500 text-sm mb-8">Tu personaje define tu experiencia en Academia Dialéctica.</p>
+                <div className="flex justify-center gap-6 mb-8">
+                  {(["guerrero", "mago", "explorador"] as const).map((cls) => (
+                    <button
+                      key={cls}
+                      onClick={() => { setGameCharacterClass(cls); setShowCharacterStep(false); setShowForm(true); }}
+                      className={`flex flex-col items-center group focus:outline-none`}
+                    >
+                      <div className={`p-2 rounded-full transition-all duration-300 group-hover:scale-110 ${
+                        gameCharacterClass === cls
+                          ? "bg-blue-500/40 ring-2 ring-blue-500 scale-110"
+                          : "bg-blue-500/10 group-hover:bg-blue-500/20"
+                      }`}>
+                        <SpriteAnimator
+                          src={`/characters/${cls}/idle.png`}
+                          frameWidth={256} frameHeight={256} frameCount={4}
+                          displayWidth={80} displayHeight={80} duration={0.8} alt={cls}
+                        />
+                      </div>
+                      <span className="text-xs font-bold mt-3 tracking-widest uppercase text-blue-600 capitalize">{cls}</span>
+                    </button>
+                  ))}
+                </div>
+                <button
+                  onClick={() => setShowCharacterStep(false)}
+                  className="text-sm font-semibold text-gray-500 hover:text-blue-600 transition-colors"
                 >
                   ← Atrás
                 </button>
@@ -463,7 +540,7 @@ export function HeroSection() {
 
                 <div className="flex flex-col gap-3">
                   <button
-                    onClick={() => setShowForm(true)}
+                    onClick={() => setShowCharacterStep(true)}
                     className="w-full bg-blue-600 hover:bg-blue-700 hover:-translate-y-1 shadow-lg shadow-blue-600/30 text-white font-bold py-4 rounded-xl transition-all"
                   >
                     Reclama tu Premio

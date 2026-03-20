@@ -4,6 +4,7 @@ import { prisma } from "@/lib/prisma";
 import { BuzonForm } from "@/components/buzon-form";
 import { CharacterCreationForm } from "@/components/character-creation-form";
 import { CharacterAvatar } from "@/components/character-avatar";
+import { UsernameEditForm } from "@/components/username-edit-form";
 
 export default async function ClientDashboard() {
   const session = await auth();
@@ -51,6 +52,11 @@ export default async function ClientDashboard() {
                 <p className="text-sm text-gray-500 capitalize">
                   {client.characterClass} &mdash; Nivel {client.level}
                 </p>
+                {client.username && (
+                  <div className="mt-2">
+                    <UsernameEditForm currentUsername={client.username} />
+                  </div>
+                )}
               </div>
 
               {/* HP Bar */}

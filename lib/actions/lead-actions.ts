@@ -4,18 +4,22 @@ import { prisma } from "@/lib/prisma";
 import { auth } from "@/lib/auth";
 import { revalidatePath } from "next/cache";
 
+const VALID_CHARACTER_CLASSES = ["guerrero", "mago", "explorador"] as const;
+
 export async function createLead(data: {
   name: string;
   email: string;
   phone?: string;
   gameScore?: number;
   difficulty?: string;
+  characterClass?: string;
 }): Promise<{ success: boolean; error?: string }> {
   const name = data.name?.trim();
   const email = data.email?.trim().toLowerCase();
   const phone = data.phone?.trim() || null;
   const gameScore = data.gameScore ?? null;
   const difficulty = data.difficulty?.trim() || null;
+  const characterClass = data.characterClass?.trim() || null;
 
   if (!name || !email) {
     return { success: false, error: "El nombre y correo son obligatorios." };
@@ -26,9 +30,13 @@ export async function createLead(data: {
     return { success: false, error: "El formato del correo es inválido." };
   }
 
+  if (characterClass && !(VALID_CHARACTER_CLASSES as readonly string[]).includes(characterClass)) {
+    return { success: false, error: "Clase de personaje inválida." };
+  }
+
   try {
     await prisma.lead.create({
-      data: { name, email, phone, gameScore, difficulty },
+      data: { name, email, phone, gameScore, difficulty, characterClass },
     });
 
     revalidatePath("/admin/leads");
