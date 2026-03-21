@@ -82,7 +82,12 @@ export const authConfig = {
 
       return true;
     },
-    async jwt({ token, account, user }) {
+    async jwt({ token, account, user, trigger }) {
+      // Session update trigger — refresh requirePasswordChange from the token
+      if (trigger === "update") {
+        return { ...token, requirePasswordChange: false };
+      }
+
       // On initial sign-in
       if (account) {
         if (account.provider === "google") {

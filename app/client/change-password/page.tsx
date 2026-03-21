@@ -3,9 +3,11 @@
 import { useState } from "react";
 import { changePassword } from "@/lib/actions/client-actions";
 import { useRouter } from "next/navigation";
+import { useSession } from "next-auth/react";
 
 export default function ChangePasswordPage() {
   const router = useRouter();
+  const { update } = useSession();
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState("");
   const [success, setSuccess] = useState(false);
@@ -39,6 +41,8 @@ export default function ChangePasswordPage() {
 
     if (result.success) {
       setSuccess(true);
+      // Update the JWT so requirePasswordChange=false, then redirect
+      await update();
       setTimeout(() => router.push("/client/dashboard"), 1500);
     } else {
       setError(result.error ?? "Error inesperado.");
