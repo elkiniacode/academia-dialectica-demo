@@ -427,7 +427,7 @@ export function NeuronCanvas({
       if (isGame) {
         count = targetCount + decoyCount;
       } else {
-        count = 120;
+        count = 200;
         if (w < 768) count = 20;
         else if (w < 1024) count = 50;
       }
