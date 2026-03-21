@@ -17,6 +17,8 @@ jobs:
           node-version: 20
           cache: npm
       - run: make install
+        env:
+          DATABASE_URL: "postgresql://ci:ci@localhost:5432/ci"
       - name: Run npm audit
         run: make audit
         continue-on-error: true
@@ -31,4 +33,6 @@ jobs:
           node-version: 20
           cache: npm
       - run: make install
+        env:
+          DATABASE_URL: "postgresql://ci:ci@localhost:5432/ci"
       - run: make test
