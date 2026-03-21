@@ -14,16 +14,21 @@ function getOAuth2Client() {
   return oauth2Client;
 }
 
+function encodeHeader(text: string): string {
+  return `=?UTF-8?B?${Buffer.from(text, "utf-8").toString("base64")}?=`;
+}
+
 function makeRawMessage(to: string, subject: string, html: string): string {
-  const from = `"Academia Dialéctica" <${process.env.GMAIL_USER}>`;
+  const fromName = encodeHeader("Academia Dialéctica");
   const message = [
-    `From: ${from}`,
+    `From: ${fromName} <${process.env.GMAIL_USER}>`,
     `To: ${to}`,
-    `Subject: ${subject}`,
+    `Subject: ${encodeHeader(subject)}`,
     "MIME-Version: 1.0",
     'Content-Type: text/html; charset="UTF-8"',
+    "Content-Transfer-Encoding: base64",
     "",
-    html,
+    Buffer.from(html, "utf-8").toString("base64"),
   ].join("\r\n");
 
   return Buffer.from(message)
