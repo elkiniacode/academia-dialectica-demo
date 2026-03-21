@@ -11,6 +11,7 @@ export default function AdminLayout({
       <NavBar />
       {children}
       <ChatBubbleLazy />
+      <footer className="h-24" />
     </>
   );
 }
