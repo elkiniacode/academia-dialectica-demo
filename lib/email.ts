@@ -1,42 +1,46 @@
-import nodemailer from "nodemailer";
 import { google } from "googleapis";
 
 const OAuth2 = google.auth.OAuth2;
 
-async function createTransport() {
+function getOAuth2Client() {
   const oauth2Client = new OAuth2(
     process.env.GOOGLE_CLIENT_ID as string,
     process.env.GOOGLE_CLIENT_SECRET as string,
     "https://developers.google.com/oauthplayground"
   );
-
   oauth2Client.setCredentials({
     refresh_token: process.env.GMAIL_REFRESH_TOKEN as string,
   });
+  return oauth2Client;
+}
 
-  const { token: accessToken } = await oauth2Client.getAccessToken();
+function makeRawMessage(to: string, subject: string, html: string): string {
+  const from = `"Academia Dialéctica" <${process.env.GMAIL_USER}>`;
+  const message = [
+    `From: ${from}`,
+    `To: ${to}`,
+    `Subject: ${subject}`,
+    "MIME-Version: 1.0",
+    'Content-Type: text/html; charset="UTF-8"',
+    "",
+    html,
+  ].join("\r\n");
 
-  return nodemailer.createTransport({
-    service: "gmail",
-    auth: {
-      type: "OAuth2",
-      user: process.env.GMAIL_USER as string,
-      clientId: process.env.GOOGLE_CLIENT_ID as string,
-      clientSecret: process.env.GOOGLE_CLIENT_SECRET as string,
-      refreshToken: process.env.GMAIL_REFRESH_TOKEN as string,
-      accessToken: accessToken ?? undefined,
-    },
-  } as any); // nodemailer's TS definitions are strict about OAuth2 shape
+  return Buffer.from(message)
+    .toString("base64")
+    .replace(/\+/g, "-")
+    .replace(/\//g, "_")
+    .replace(/=+$/, "");
 }
 
 export async function sendEmail(to: string, subject: string, html: string) {
-  const transport = await createTransport();
+  const auth = getOAuth2Client();
+  const gmail = google.gmail({ version: "v1", auth });
+
   try {
-    await transport.sendMail({
-      from: `"Academia Dialéctica" <${process.env.GMAIL_USER}>`,
-      to,
-      subject,
-      html,
+    await gmail.users.messages.send({
+      userId: "me",
+      requestBody: { raw: makeRawMessage(to, subject, html) },
     });
   } catch (error) {
     console.error(`[email] Failed to send to ${to}:`, error);
