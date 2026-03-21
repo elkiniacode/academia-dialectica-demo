@@ -5,8 +5,8 @@ const OAuth2 = google.auth.OAuth2;
 
 async function createTransport() {
   const oauth2Client = new OAuth2(
-    process.env.GMAIL_CLIENT_ID as string,
-    process.env.GMAIL_CLIENT_SECRET as string,
+    process.env.GOOGLE_CLIENT_ID as string,
+    process.env.GOOGLE_CLIENT_SECRET as string,
     "https://developers.google.com/oauthplayground"
   );
 
@@ -21,8 +21,8 @@ async function createTransport() {
     auth: {
       type: "OAuth2",
       user: process.env.GMAIL_USER as string,
-      clientId: process.env.GMAIL_CLIENT_ID as string,
-      clientSecret: process.env.GMAIL_CLIENT_SECRET as string,
+      clientId: process.env.GOOGLE_CLIENT_ID as string,
+      clientSecret: process.env.GOOGLE_CLIENT_SECRET as string,
       refreshToken: process.env.GMAIL_REFRESH_TOKEN as string,
       accessToken: accessToken ?? undefined,
     },
