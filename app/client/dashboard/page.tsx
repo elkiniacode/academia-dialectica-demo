@@ -5,6 +5,7 @@ import { BuzonForm } from "@/components/buzon-form";
 import { CharacterCreationForm } from "@/components/character-creation-form";
 import { CharacterAvatar } from "@/components/character-avatar";
 import { UsernameEditForm } from "@/components/username-edit-form";
+import { PasswordChangeForm } from "@/components/password-change-form";
 
 export default async function ClientDashboard() {
   const session = await auth();
@@ -53,8 +54,9 @@ export default async function ClientDashboard() {
                   {client.characterClass} &mdash; Nivel {client.level}
                 </p>
                 {client.username && (
-                  <div className="mt-2">
+                  <div className="mt-2 space-y-1">
                     <UsernameEditForm currentUsername={client.username} />
+                    <PasswordChangeForm currentUsername={client.username} />
                   </div>
                 )}
               </div>

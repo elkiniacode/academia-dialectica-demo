@@ -7,6 +7,7 @@ import { hashPassword, validatePassword } from "@/lib/password";
 export interface ClientResult {
   success: boolean;
   error?: string;
+  username?: string;
 }
 
 export async function getClients() {
@@ -255,12 +256,13 @@ export async function changePassword(
 
   const hashed = await hashPassword(newPassword);
 
-  await prisma.client.update({
+  const updated = await prisma.client.update({
     where: { id: session.userId },
     data: { password: hashed, requirePasswordChange: false },
+    select: { username: true },
   });
 
-  return { success: true };
+  return { success: true, username: updated.username ?? undefined };
 }
 
 export async function updateUsername(

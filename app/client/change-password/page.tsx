@@ -2,12 +2,9 @@
 
 import { useState } from "react";
 import { changePassword } from "@/lib/actions/client-actions";
-import { useRouter } from "next/navigation";
-import { useSession } from "next-auth/react";
+import { signIn } from "next-auth/react";
 
 export default function ChangePasswordPage() {
-  const router = useRouter();
-  const { update } = useSession();
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState("");
   const [success, setSuccess] = useState(false);
@@ -24,7 +21,6 @@ export default function ChangePasswordPage() {
       return;
     }
 
-    // Client-side strength check before hitting the server
     const isValid =
       newPassword.length >= 8 &&
       /[a-zA-Z]/.test(newPassword) &&
@@ -39,11 +35,19 @@ export default function ChangePasswordPage() {
     const result = await changePassword(newPassword);
     setSubmitting(false);
 
-    if (result.success) {
+    if (result.success && result.username) {
       setSuccess(true);
-      // Update the JWT so requirePasswordChange=false, then hard redirect
-      await update();
+      // Re-authenticate to get a fresh JWT with requirePasswordChange=false
+      await signIn("credentials", {
+        username: result.username,
+        password: newPassword,
+        redirect: false,
+      });
       setTimeout(() => { window.location.href = "/client/dashboard"; }, 1500);
+    } else if (result.success) {
+      // Fallback: no username returned, sign out and redirect to login
+      setSuccess(true);
+      setTimeout(() => { window.location.href = "/login"; }, 1500);
     } else {
       setError(result.error ?? "Error inesperado.");
     }
