@@ -41,9 +41,9 @@ export default function ChangePasswordPage() {
 
     if (result.success) {
       setSuccess(true);
-      // Update the JWT so requirePasswordChange=false, then redirect
+      // Update the JWT so requirePasswordChange=false, then hard redirect
       await update();
-      setTimeout(() => router.push("/client/dashboard"), 1500);
+      setTimeout(() => { window.location.href = "/client/dashboard"; }, 1500);
     } else {
       setError(result.error ?? "Error inesperado.");
     }
