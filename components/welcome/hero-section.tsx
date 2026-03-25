@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useCallback, useEffect, useLayoutEffect, useRef } from "react";
+import { useRouter } from "next/navigation";
 import { NeuronCanvas } from "./neuron-canvas";
 import { SpriteAnimator } from "../sprite-animator";
 import { createLead } from "@/lib/actions/lead-actions";
@@ -12,6 +13,8 @@ type Difficulty = "easy" | "medium" | "hard";
 const DIFFICULTY_MULTIPLIER = { easy: 1.0, medium: 1.5, hard: 2.0 } as const;
 
 export function HeroSection() {
+  const router = useRouter();
+
   // ==========================================
   // GAME STATE & LOGIC (100% UNTOUCHED)
   // ==========================================
@@ -98,9 +101,9 @@ export function HeroSection() {
     ]);
 
     if (result.success) {
-      setFormSubmitted(true);
       // Refresh canvas to ambient state as soon as the game flow is done
       setGameSessionId((prev) => prev + 1);
+      router.push("/gracias");
     } else {
       setErrorMsg(result.error || "Error inesperado.");
     }
