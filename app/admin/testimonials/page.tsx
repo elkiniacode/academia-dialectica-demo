@@ -1,12 +1,8 @@
-import { auth } from "@/lib/auth";
 import { getTestimonials } from "@/lib/actions/testimonial-actions";
 import { TestimonialTable } from "@/components/testimonial-table";
 
 export default async function TestimonialsPage() {
-  const session = await auth();
   const testimonials = await getTestimonials();
-  // Demo admin (credentials-based ADMIN) has userId set; real admin (Google OAuth) does not
-  const readOnly = !!session?.userId;
 
   return (
     <div className="max-w-6xl mx-auto p-3 md:p-6">
@@ -18,12 +14,7 @@ export default async function TestimonialsPage() {
         tengas, mayor credibilidad genera tu academia. Puedes controlar cuáles
         están visibles al público sin tener que eliminarlos.
       </p>
-      {readOnly && (
-        <p className="mb-4 text-sm text-amber-700 bg-amber-50 border border-amber-200 rounded-lg px-4 py-2">
-          Modo demo: solo lectura. No puedes agregar, editar ni eliminar testimonios.
-        </p>
-      )}
-      <TestimonialTable testimonials={testimonials} readOnly={readOnly} />
+      <TestimonialTable testimonials={testimonials} readOnly={false} />
     </div>
   );
 }

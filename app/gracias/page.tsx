@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { GraciasConversion } from "@/components/gracias-conversion";
 
 export const metadata = {
   title: "¡Registro Exitoso! — Academia Dialéctica",
@@ -9,6 +10,7 @@ export const metadata = {
 export default function GraciasPage() {
   return (
     <main className="min-h-screen bg-gray-950 flex items-center justify-center p-6">
+      <GraciasConversion />
       <div className="bg-white rounded-3xl p-10 max-w-md w-full text-center shadow-2xl">
         <div className="w-20 h-20 bg-green-100 text-green-500 rounded-full flex items-center justify-center text-4xl mx-auto mb-6">
           ✓

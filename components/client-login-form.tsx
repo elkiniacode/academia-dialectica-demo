@@ -11,17 +11,15 @@ export function ClientLoginForm() {
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
-  const [activeDemo, setActiveDemo] = useState<string | null>(null);
 
   useEffect(() => {
     router.prefetch("/client/dashboard");
     router.prefetch("/admin/balance");
   }, [router]);
 
-  async function doLogin(user: string, pass: string, isDemo?: string) {
+  async function doLogin(user: string, pass: string) {
     setError("");
     setLoading(true);
-    if (isDemo) setActiveDemo(isDemo);
 
     const result = await signIn("credentials", {
       username: user,
@@ -32,7 +30,6 @@ export function ClientLoginForm() {
     if (result?.error) {
       setError("Usuario o contraseña incorrectos");
       setLoading(false);
-      setActiveDemo(null);
       return;
     }
 
@@ -42,7 +39,6 @@ export function ClientLoginForm() {
     const session = await res.json();
 
     setLoading(false);
-    setActiveDemo(null);
 
     if (session?.role === "ADMIN") {
       const now = new Date();
@@ -107,43 +103,7 @@ export function ClientLoginForm() {
         disabled={loading}
         className="w-full px-6 py-3 bg-green-600 text-white rounded-lg hover:bg-green-700 disabled:opacity-50 text-lg transition-colors font-semibold"
       >
-        {loading && !activeDemo ? "Ingresando..." : "Iniciar sesión"}
-      </button>
-
-      {/* Demo quick-fill divider */}
-      <div className="relative my-8">
-        <div className="absolute inset-0 flex items-center">
-          <div className="w-full border-t border-gray-200"></div>
-        </div>
-        <div className="relative flex justify-center text-xs uppercase">
-          <span className="bg-white px-4 text-gray-400 font-medium tracking-wider">
-            Acceso rápido demo
-          </span>
-        </div>
-      </div>
-
-      {/* Demo quick-fill buttons */}
-      <button
-        type="button"
-        onClick={() => doLogin("bart", "ab676767", "bart")}
-        disabled={loading}
-        className="w-full py-2.5 px-4 border border-gray-200 rounded-lg text-sm font-semibold text-gray-700 hover:bg-gray-50 hover:border-gray-300 transition-all flex items-center justify-center gap-2 group"
-      >
-        <span className="group-hover:scale-110 transition-transform">🎓</span>
-        {activeDemo === "bart"
-          ? "Preparando mochila..."
-          : "Entrar como Bart (Estudiante)"}
-      </button>
-      <button
-        type="button"
-        onClick={() => doLogin("Big Boss (BB)", "platzi2026", "admin")}
-        disabled={loading}
-        className="w-full py-2.5 px-4 border border-gray-200 rounded-lg text-sm font-semibold text-gray-700 hover:bg-gray-50 hover:border-gray-300 transition-all flex items-center justify-center gap-2 group"
-      >
-        <span className="group-hover:scale-110 transition-transform">🛡️</span>
-        {activeDemo === "admin"
-          ? "Iniciando protocolo..."
-          : "Acceso Big Boss (Admin)"}
+        {loading ? "Ingresando..." : "Iniciar sesión"}
       </button>
     </form>
   );

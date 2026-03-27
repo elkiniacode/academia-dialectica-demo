@@ -21,7 +21,6 @@ export async function getStories() {
 export async function createStory(formData: FormData): Promise<ActionResult> {
   const session = await auth();
   if (!session || session.role !== "ADMIN") return { success: false, error: "No autorizado" };
-  if (session.userId) return { success: false, error: "La cuenta demo no puede crear historias" };
 
   const title = formData.get("title")?.toString().trim();
   const content = formData.get("content")?.toString().trim();
@@ -46,7 +45,6 @@ export async function updateStory(
 ): Promise<ActionResult> {
   const session = await auth();
   if (!session || session.role !== "ADMIN") return { success: false, error: "No autorizado" };
-  if (session.userId) return { success: false, error: "La cuenta demo no puede editar historias" };
 
   const title = formData.get("title")?.toString().trim();
   const content = formData.get("content")?.toString().trim();
@@ -69,7 +67,6 @@ export async function updateStory(
 export async function deleteStory(id: string): Promise<ActionResult> {
   const session = await auth();
   if (!session || session.role !== "ADMIN") return { success: false, error: "No autorizado" };
-  if (session.userId) return { success: false, error: "La cuenta demo no puede eliminar historias" };
 
   await prisma.story.delete({ where: { id } });
   revalidatePath("/", "page");
@@ -82,7 +79,6 @@ export async function toggleStoryVisibility(
 ): Promise<ActionResult> {
   const session = await auth();
   if (!session || session.role !== "ADMIN") return { success: false, error: "No autorizado" };
-  if (session.userId) return { success: false, error: "La cuenta demo no puede modificar historias" };
 
   const story = await prisma.story.findUnique({ where: { id } });
   if (!story) return { success: false, error: "Historia no encontrada" };

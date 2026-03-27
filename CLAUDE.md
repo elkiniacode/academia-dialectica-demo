@@ -1,272 +1,80 @@
-# Project Notes
+# CLAUDE.md
 
-## Auth — Google OAuth Token Refresh
+This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
-`lib/auth.ts` implements automatic access token refresh for Google Calendar API calls.
+## Project Overview
 
-- On initial sign-in, the JWT callback stores `accessToken`, `refreshToken`, and `expiresAt`
-- On subsequent requests, if the token is expired (checked with a 60s buffer), `refreshAccessToken()` calls `https://oauth2.googleapis.com/token` with the stored refresh token
-- If refresh fails, `error: "RefreshAccessTokenError"` is set on the session — handle this by prompting re-login
-- `session.accessToken` is always the current (possibly refreshed) token passed to Google Calendar API calls
+**Academia Dialectica ("Running")** — Full-stack educational management platform (Bogota, Colombia). Public landing page with gamification, admin portal for managing clients/finances, and student portal with RPG progression. All UI text is in Spanish.
 
-## Client Management & Telegram Bot
+## Commands
 
-See [02_implementation.md](memory/02_implementation.md) for full details.
+```bash
+make install          # First-time setup (npm ci + prisma generate)
+make dev              # Start dev server (localhost:3000)
+make build            # Production build (prisma generate + next build)
+make test             # Run all tests (vitest run)
+make test-watch       # Watch mode
+make security         # npm audit + tests
+make db-push          # Push schema changes to DB
+make db-deploy        # Run migrations
+make db-seed          # Seed database (tsx prisma/seed.ts)
+make docker-dev       # Dev with hot-reload via Docker
+make docker-prod      # Production Docker container
+```
 
-- `/clients` page with full CRUD (add/edit/delete via modal forms)
-- Telegram bot webhook at `/api/telegram/webhook` for quick mobile entry
-- Client model extended with: student, modalidad, grado, celular, direccion, correo, createdAt, updatedAt
-- Env vars required: `TELEGRAM_BOT_TOKEN`, `TELEGRAM_ALLOWED_USER_ID`
-- Telegram webhook must be registered with a public URL: `https://api.telegram.org/bot<TOKEN>/setWebhook?url=https://<domain>/api/telegram/webhook`
+Run a single test file: `npx vitest run __tests__/path/to/file.test.ts`
 
-## AI Client Analysis (Claude)
+## Tech Stack
 
-See [03_implementation.md](memory/03_implementation.md) for full details.
+- **Framework:** Next.js 16 (App Router) + React 19 + TypeScript 5.9
+- **Styling:** Tailwind CSS 4 + PostCSS
+- **Database:** PostgreSQL (Supabase) via Prisma 7 (`@prisma/adapter-pg`)
+- **Auth:** NextAuth v5 beta — Google OAuth (admin) + Credentials (students)
+- **AI:** Vercel AI SDK **v4** (`ai@^4`) — do NOT upgrade to v6, API is incompatible
+  - Claude (`claude-sonnet-4-20250514`) for vision analysis + chat
+  - OpenAI (`gpt-4o-mini`) as alternate chat provider
+- **Testing:** Vitest 4.1 + happy-dom + Testing Library
+- **CI:** GitHub Actions (Node 20) — security audit + unit tests on push/PR to main
 
-- Upload photo of client form → Claude vision extracts data → auto-fills the Add Client modal
-- API route: `/api/analyze-client` (POST, auth-protected)
-- Model: `claude-sonnet-4-20250514` via `@anthropic-ai/sdk` — sends image as base64
-- Images only (JPEG, PNG, GIF, WebP) — video not supported by Claude vision
-- Env var required: `ANTHROPIC_API_KEY`
+## Architecture
 
-## Bulk Client Import (Photo)
+### Directory Structure
 
-See [05_implementation.md](memory/05_implementation.md) for full details.
+- `app/` — Next.js App Router: `api/`, `admin/`, `client/`, `login/`
+- `components/` — React components (`welcome/` = public page, `dashboard/` = admin charts)
+- `lib/` — Business logic: `auth.ts`, `prisma.ts`, `password.ts`, `email.ts`
+- `lib/actions/` — Server Actions (client, exam, gamification, balance, dashboard, leads)
+- `prisma/` — Schema + migrations
+- `types/` — TypeScript type definitions
+- `__tests__/` — Vitest unit tests
+- `memory/` — Numbered implementation docs (historical reference)
 
-- Upload photo with multiple client forms → Claude vision extracts all as JSON array → editable preview table → batch insert
-- Bulk API route: `/api/analyze-clients-bulk` (POST, auth-protected, 20 MB file limit)
-- Server action: `bulkCreateClients` in `lib/actions/client-actions.ts` — validates, dedupes, atomic transaction
-- Preview component: `components/bulk-import-preview.tsx` — inline-editable table with row deletion
-- Green "Importación Masiva (Foto)" button on `/admin/clients` page
+### Authentication & Authorization
 
-## AI Chatbot Assistant
+Dual auth system in `lib/auth.ts` + `middleware.ts`:
+- **Admin:** Google OAuth, whitelisted via `ADMIN_EMAIL` env var. JWT stores access/refresh tokens for Google Calendar API with auto-refresh.
+- **Student:** Credentials provider (username + bcrypt password). `requirePasswordChange` flag forces new students to `/client/change-password`.
+- **RBAC:** `Role` enum (ADMIN, CLIENT) on Client model. Middleware enforces route access. All Server Actions verify role. CLIENT actions use `session.userId` for IDOR prevention.
 
-See [06_implementation.md](memory/06_implementation.md) for full details.
+### Data Flow Patterns
 
-- Floating chat bubble on all `/admin/*` pages for querying client data in natural language
-- Uses Vercel AI SDK **v4** (`ai@^4`) — do NOT upgrade to v6, the API is incompatible
-- `streamText()` + `toDataStreamResponse()` server-side; `useChat` from `ai/react` client-side
-- Two switchable providers: Claude (`claude-sonnet-4-20250514`), OpenAI (`gpt-4o-mini`)
-- API route: `/api/chat` (POST, auth-protected, streaming); provider sent via `body` in `useChat`
-- Anti-hallucination guardrail: AI responds only from DB data, refuses to invent information
-- Error handling: inline red banner with context-aware messages (401, invalid API key, generic)
-- Env vars required: `ANTHROPIC_API_KEY`, `OPENAI_API_KEY`
-- Component: `components/chat-bubble.tsx` — fixed-position bubble at bottom-right with provider dropdown
+- **Server Actions** (`lib/actions/`) are the primary data mutation layer — called directly from client components.
+- **API Routes** (`app/api/`) only for: streaming chat (`/api/chat`), image analysis (`/api/analyze-client`, `/api/analyze-clients-bulk`), cron jobs (`/api/cron/process-leads`), Telegram webhook, OG images.
+- **AI chat** uses Vercel AI SDK tool calling (7 tools with Zod schemas) to query DB via existing server actions. PII fields (`celular`, `direccion`, `correo`, `password`, `username`) are redacted before sending to AI.
+- **Google Calendar** sync for sessions, **Gmail API** for automated lead emails (NOT Nodemailer — Railway blocks SMTP).
 
-## Neuron Canvas Animation (Hero Section)
+### Key Constraints
 
-See [07_implementation.md](memory/07_implementation.md) for full details.
+- Vercel AI SDK must stay at **v4** — v6 has incompatible API
+- Gmail uses `googleapis` over HTTPS, not SMTP (Railway port restriction)
+- Telegram webhook requires both `TELEGRAM_WEBHOOK_SECRET` and `TELEGRAM_ALLOWED_USER_ID` — server crashes without them
+- `next.config.ts` has `output: "standalone"` for Docker deployment
+- Prisma uses `@prisma/adapter-pg` (not default connector) — needs `DATABASE_URL` and `DIRECT_URL`
+- Cloudflare Workers is NOT compatible (Prisma 7, bcryptjs, streaming AI)
 
-- Biological neuron animation on HTML5 `<canvas>` overlaying the Hero Section
-- 12 procedurally generated sprite variants with 5 color palettes (cyan, purple, teal, blue, rose)
-- Neurons at 25–100px sizes with depth/parallax (30% background layer at reduced alpha/speed)
-- Organic motion: base drift + sinusoidal wobble (0.15 amplitude) + velocity-aligned rotation + edge wrapping fallback
-- Spring-force equilibrium model: each neuron pair attracts/repels toward a dynamic ideal distance (`sqrt(area/count) * 0.85`), producing a stable cellular matrix instead of clumping
-- Hard short-range repulsion (60px) prevents overlap; soft boundary repulsion (80px margin) keeps neurons on screen
-- Multiplicative velocity damping (`0.97^timeScale`) for frame-rate independent friction; connection cap of 3 nearest neighbors per neuron
-- Double-stroke connections: thick palette-colored margin (3.5px) + thin white core (1.0px); mouse ghost uses cyan margin (4.0px) + white core (1.5px)
-- Warm (orange) + cool (cyan) electric sparks along Bezier curves
-- Mouse ghost neuron: cursor forms brighter double-stroke connections to nearby neurons
-- Responsive ambient mode: 15 neurons on mobile, 35 tablet, 60 desktop; game mode: 5–10 target + 2 decoy neurons
-- Visual clarity: `shadowBlur` glow in palette color, white stroke ring, subtle inner pulse on each neuron
-- Mouse repulsion (game only): activates after 2 captures, base=0.03 + score×0.015, velocity cap 1.8, quadratic falloff within 150px
-- Strategic L-walls (game only): outward-facing L-shapes (vertical 20×45%h + foot 100px), responsive on mobile (35%h/60px); hard screen boundary bounces (0.8 restitution) replace wrapping
-- Delta-time animation (consistent speed on 60–240Hz), DPR-aware sizing, `pointer-events-none`
-- Performance: neurons depth-sorted once at init, accumulated `animTime` for pulse (not `Date.now`), damping after all forces + velocity cap
-- Component: `components/welcome/neuron-canvas.tsx` — integrated in `components/welcome/hero-section.tsx`
+### Testing Conventions
 
-## Neuron Hunt Mini-Game (Hero Section)
-
-See [08_implementation.md](memory/08_implementation.md) for full details.
-
-- Interactive mini-game on top of NeuronCanvas: click neurons of a target color to remove them
-- Monotonic `id` on each Neuron; Sparks use `fromId`/`toId` (not array indices) for safe removal
-- `useLayoutEffect` ref bridges sync React props into animation loop with zero-frame delay
-- Forgiving hit radius: `(drawSize/2) + 15px`; closest center wins on overlap
-- Game spawns 5–10 target neurons (random) + 2 decoy neurons; win condition: all targets removed (`remaining === 0`)
-- `score` prop passed from HeroSection → NeuronCanvas via `scoreRef` ref bridge
-- Visual feedback: pulsing glow on targets, ×0.4 opacity dimming on non-targets, expanding red flash on wrong clicks
-- `key={gameSessionId}` on `<NeuronCanvas>` forces fresh mount on game start/quit/replay
-- Hero section uses `min-h-screen` to maintain full viewport height during gameplay
-- Pre-game rules modal with difficulty selection: "Fácil" (×1.0), "Medio" (×1.5), "Difícil" (×2.0) — sets `difficulty` prop on NeuronCanvas for repulsion scaling
-- 2-minute countdown timer: displayed in HUD (red at ≤30s); timeout triggers "Perdiste" game-over modal
-- Dynamic final score: `(neurons×50 + secondsLeft×10) × difficultyMultiplier` → displayed as `finalCerebritos`
-- Timer uses `timeLeftRef` + side-effects outside state updater (React Strict Mode safe); refs synced via `useLayoutEffect`
-- 5-layer z-index: Canvas (z1) → Hero content (z2) → Rules modal (z50) → HUD (z20) → Game-over/Completion modal (z50)
-- HUD: responsive `flex-wrap` layout for mobile; timer badge turns red at ≤30s; target color, score, timer, remaining, quit
-- Completion modal: `finalCerebritos` score + neuroplasticity copy + "Reclama tu Premio" → lead form
-- Components: `components/welcome/neuron-canvas.tsx`, `components/welcome/hero-section.tsx`
-
-## Lead Capture Form
-
-See [09_implementation.md](memory/09_implementation.md) for full details.
-
-- "Reclama tu Premio" button on completion modal → inline registration form (Name, Email, Phone)
-- Server action `createLead` called directly from client component (no API route)
-- `Lead` model with auto-increment `number`, unique email constraint, optional phone, optional `gameScore` (Int) and `difficulty` (String) saved from game
-- Server-side validation + P2002 duplicate handling + `revalidatePath`
-- Admin page at `/admin/leads` with auth-protected `getLeads(limit=100)`
-- "Leads" link added to NavBar
-
-## Lead Numbering & CSV Download
-
-See [10_implementation.md](memory/10_implementation.md) for full details.
-
-- Auto-increment `number` field on Lead model (`@default(autoincrement())`)
-- `getLeadsByRange(from, to)` server action with auto-swap logic
-- CSV download API at `/api/leads/download?from=N&to=N` with UTF-8 BOM and robust escaping
-- Download UI: range inputs with clamping + "Descargar CSV" / "Descargar Todo" buttons
-- Admin page shows `#` column (right-aligned, monospace), newest first
-
-## RBAC & Client Portal
-
-See [11_implementation.md](memory/11_implementation.md) for full details.
-
-- Dual auth: Google OAuth (admin only, whitelisted via `ADMIN_EMAIL`) + Credentials provider (username/password for clients)
-- `Role` enum (`ADMIN`, `CLIENT`) on Client model; `username` (unique) and `password` (bcrypt) fields
-- `proxy.ts` matcher covers `/admin/:path*` and `/client/:path*`; RBAC in `authorized` callback
-- CLIENT on `/admin/*` → redirected to `/client/dashboard`; ADMIN can access `/client/*` to inspect
-- JWT `maxAge` = 24 hours (ghost session mitigation)
-- Three new models: `Exam` (title, score, date, commentary), `ProgressNote` (content, date, color), `Suggestion` (message, status)
-- Buzón de Sugerencias: CLIENT creates suggestions → ADMIN marks as read
-- Client portal at `/client/dashboard` with exams, progress notes, buzón form
-- Security: S1 (all Server Actions check role), S2 (IDOR prevention — CLIENT uses session.userId), S3 (password min 8 chars + weak list), S4 (24h JWT), S5 (admin email whitelist)
-- Env var required: `ADMIN_EMAIL`
-- Password utility: `lib/password.ts` — trims whitespace before hash/verify to prevent copy-paste bugs
-- Admin client form: "Acceso al Portal" section with username + password fields
-
-## Admin Client Detail Page & Academic Data UI
-
-See [12_implementation.md](memory/12_implementation.md) for full details.
-
-- Admin client detail page at `/admin/clients/[id]` — client info header + Exams, Progress Notes, Suggestion panels
-- Green "Ver" link per row in `/admin/clients` table navigates to the detail page
-- `components/admin-exam-panel.tsx` — inline add form + color-coded scored list (green ≥7, yellow ≥5, red <5)
-- `components/admin-progress-note-panel.tsx` — inline add form with 6 color swatches + left-bordered list
-- `components/admin-suggestion-view.tsx` — read-only suggestion list + "Marcar leído" button
-- Unread suggestion count banner on `/admin/dashboard` (yellow, links to clients list)
-- `.env` gotcha: keys must have no leading spaces and no spaces around `=`; `ADMIN_EMAIL` formatting bug caused Google OAuth redirect loop — fix by clearing `authjs.session-token` cookie
-
-## Security Hardening
-
-See [13_implementation.md](memory/13_implementation.md) for full details.
-
-- `.gitignore` created to prevent committing `.env`, `node_modules/`, `.next/`
-- Telegram webhook: secret token verification via `X-Telegram-Bot-Api-Secret-Token` header
-- Security headers: `X-Frame-Options`, `X-Content-Type-Options`, `Referrer-Policy`, `Permissions-Policy` on all routes
-- Password validation: 20-entry weak list + rejects all-same-char + requires letter + number
-- Server-side email regex validation in `createLead`
-- Date validation (`isNaN` guard) in exam and progress note create/update actions
-- PII redaction: `celular`, `direccion`, `correo`, `password`, `username` stripped before sending to AI providers in `/api/chat`
-- CSV download: direct ADMIN auth check in `/api/leads/download` (defense-in-depth)
-- Env var required: `TELEGRAM_WEBHOOK_SECRET` (register with `setWebhook?secret_token=...`)
-
-## Student Gamification & RPG Progression
-
-See [project_gamification.md](memory/project_gamification.md) for full details.
-
-- RPG-style progression: students choose a character class (Guerrero, Mago, Explorador) and name their hero (one-time setup)
-- Client model extended with: `hp` (0–100), `xp`, `level` (auto: `Math.floor(xp/100)+1`), `characterName`, `characterClass`
-- Server actions in `lib/actions/gamification-actions.ts`: `updateClientStats` (ADMIN), `initializeCharacter` (CLIENT, IDOR-protected)
-- Client dashboard (`/client/dashboard`): character creation form (no character) or RPG dashboard with avatar, HP/XP bars
-- Character avatar: loads `/characters/{class}/level-{min(level,3)}.png`, falls back to colored letter-avatar on missing image
-- Admin panel: `components/admin-gamification-panel.tsx` — full-width at top of `/admin/clients/[id]`, HP/XP adjustment form
-- Character info badge shown in admin client header when set
-
-## Spritesheet Character Animation & Companion
-
-See [14_implementation.md](memory/14_implementation.md) for full details.
-
-- `SpriteAnimator` component: CSS `steps()` + `background-position` for frame-by-frame horizontal spritesheet animation
-- Scoped `@keyframes` via `useId()`, `imageRendering: pixelated` for crisp pixel art, `isMounted` guard in preload `useEffect`
-- `CharacterAvatar` extended with `variant` (default/idle/companion), `size` (sm/md/lg), `animated` props
-- Three-stage waterfall fallback: Animated Sprite → Static PNG (`level-N.png`) → Colored letter-avatar
-- Spritesheet config: `frameWidth: 256, frameHeight: 256, frameCount: 4, duration: 0.8` (adjustable in `character-avatar.tsx`)
-- Image assets: `public/characters/{class}/idle.png` (horizontal spritesheet), `level-N.png` (static fallback)
-- Floating companion on all `/client/*` pages: `components/character-companion.tsx`, fixed bottom-right, localStorage toggle
-- Companion mounted in `app/client/layout.tsx` via server-side `auth()` props (no `useSession` needed)
-- CSS animations in `globals.css`: `companion-bob` (3s float), `character-glow` (2s glow pulse)
-- Session extended with `characterClass`/`level` in JWT + session callbacks (`auth.config.ts`, `next-auth.d.ts`)
-- Welcome page: 3 character class sprites with glow wrappers in `hero-section.tsx`, hidden during game mode
-- Components: `components/sprite-animator.tsx`, `components/character-avatar.tsx`, `components/character-companion.tsx`
-
-## AI Chatbot Tool Calling
-
-See [16_implementation.md](memory/16_implementation.md) for full details.
-
-- Upgraded from static data injection to **true tool calling** via Vercel AI SDK v4 `tools` parameter
-- 7 tools defined with Zod schemas: `obtener_clientes`, `obtener_kpis_mensuales`, `obtener_matriz_ingresos_clientes`, `obtener_crecimiento_clientes`, `obtener_comparacion_anual`, `obtener_balance_mensual`, `obtener_periodos_disponibles`
-- Tools call existing server actions from `dashboard-actions.ts` and `fetch-balance.ts` — no new data layer
-- `maxSteps: 5` on both `streamText` (server) and `useChat` (client) for multi-round tool chaining
-- System prompt includes today's date for relative time resolution ("el mes pasado" → correct year/month)
-- PII still redacted on `obtener_clientes` before sending to third-party AI providers
-- Empty tool-call intermediate messages filtered from chat UI rendering
-- ADMIN role guard preserved at top of `/api/chat` POST handler
-
-## Security Hardening v2
-
-See [15_implementation.md](memory/15_implementation.md) for full details.
-
-- API route authorization: `/api/chat`, `/api/analyze-client`, `/api/analyze-clients-bulk` now enforce `session.role === "ADMIN"` (previously only checked session existence)
-- Telegram webhook fail-fast: `TELEGRAM_ALLOWED_USER_ID` and `TELEGRAM_WEBHOOK_SECRET` env vars are now mandatory — server crashes on startup if missing or malformed
-- Telegram guards unconditional: secret header and user ID checks always run (no more conditional `if (WEBHOOK_SECRET)` wrappers)
-
-## Bankist-Inspired Landing Page Redesign
-
-See [17_implementation.md](memory/17_implementation.md) for full details.
-
-- Public landing page redesigned with clean, minimalist Bankist UI design language
-- Glassmorphism sticky navbar: `components/welcome/public-navbar.tsx` — logo, anchor links (#caracteristicas, #modalidades, #testimonios), "Acceso" CTA, mobile hamburger with absolute overlay dropdown
-- Features section: `components/welcome/features-section.tsx` — 3 Bankist-style alternating rows (image placeholder + icon/text), `id="caracteristicas"`
-- Tabbed modalities: `components/welcome/modalities-section.tsx` — Presencial/Online/Híbrido tabs with `key={activeTab}` fade animation, `id="modalidades"`
-- Stories slider: `components/welcome/stories-section.tsx` — CSS-transform horizontal slider replacing grid, `<Image />` replacing raw `<img>`, prev/next arrows + dot navigation
-- Premium design system: diffused shadows (`shadow-xl shadow-blue-900/5 ring-1 ring-gray-900/5`), micro-interactions (`hover:-translate-y-1`), tight header tracking, uppercase eyebrow labels
-- Smooth scrolling: `scroll-smooth` on `<html>` in `app/layout.tsx`
-- `fadeIn` keyframe in `globals.css` for tab content transitions
-- Hero section: logo removed (moved to navbar), `id="hero"` added, all game logic preserved
-
-## Hero Section Split-Screen Redesign
-
-See [18_implementation.md](memory/18_implementation.md) for full details.
-
-- Hero section refactored from full-screen blue gradient to 50/50 split-screen on `bg-gray-50`
-- 2-column grid (`grid-cols-1 lg:grid-cols-2`): left = text/sprites/CTAs, right = game container
-- Left column: Bankist eyebrow, gradient-highlighted headline, character sprites in `flex` row, "Empieza el Juego" + "Conoce Más" CTAs
-- Right column: `rounded-[2.5rem] bg-gray-900` container with `shadow-2xl`; NeuronCanvas fills via `absolute inset-0`
-- Game mode expansion: left column hides, right column grows to `lg:col-span-2 lg:h-[80vh]` with `transition-all duration-500`
-- No hover translate on game container — click targets stay stable during gameplay
-- HUD trapped inside `relative overflow-hidden` container (absolute positioning, not fixed)
-- Modals: `fixed inset-0 z-[60]` — overlay full viewport; upgraded with premium rounded cards, labeled form inputs, score display cards
-- "Acceso Administrador" replaced with "Conoce Más" anchor (`#caracteristicas`)
-- Component: `components/welcome/hero-section.tsx` — layout-only refactor, zero game logic changes
-
-## Landing Page Polish
-
-See [19_implementation.md](memory/19_implementation.md) for full details.
-
-- Hero background: `bg-blue-50` (soft solid blue); game container: restored `bg-gradient-to-br from-blue-600 via-blue-700 to-indigo-800`
-- Ambient neurons doubled: desktop 120, tablet 70, mobile 30 (`neuron-canvas.tsx`)
-- "Escoge tu personaje favorito" label added above character sprites in hero
-- Navbar: "Historias de Éxito" (`#historias`) and "Contáctanos" (`#footer`) links added
-- Stories section: `id="historias"` added for anchor navigation
-- Footer: social links (Instagram, TikTok, YouTube), full contact info (phone, email, location), legibility improvements (`text-gray-300`, `text-base`, logo in rounded box, larger social icons with hover circles)
-- All section anchor IDs: `#hero`, `#caracteristicas`, `#modalidades`, `#historias`, `#testimonios`, `#footer`
-
-## Performance, Testing, CI & Docker
-
-See [20_implementation.md](memory/20_implementation.md) for full details.
-
-- Web performance: lazy-loading (ChatBubble, Recharts), ISR, Image optimization, unstable_cache on dashboard queries, narrowed revalidatePath, Prisma select, streaming skeletons
-- Unit tests: Vitest + happy-dom, 19 tests (password validation + login redirect)
-- CI: GitHub Actions — security audit + unit tests on push/PR (Node 20)
-- Makefile: dev, prod, test, security, Docker targets
-- AI migration: Gemini removed entirely, image analysis uses Claude Vision (`claude-sonnet-4`), chat has Claude + OpenAI
-
-## Docker & Deployment
-
-- Multi-stage `Dockerfile`: base → deps-dev → builder → dev/prod targets
-- `docker-compose.yml`: dev (hot-reload bind mount) + prod (minimal image) via profiles
-- `next.config.ts` has `output: "standalone"` enabled
-- Dev: `make docker-dev` | Prod: `make docker-prod` | Build: `make docker-build-prod`
-- Recommended cloud: Railway (auto-detects Dockerfile, GitHub auto-deploy)
-- Cloudflare Workers incompatible (Prisma 7, bcryptjs, streaming AI)
+- Tests live in `__tests__/` mirroring source structure
+- Environment: happy-dom (configured in `vitest.config.ts`)
+- Path aliases (`@/`) resolved via `vite-tsconfig-paths`
+- Current coverage: password validation, client login/IDOR, client actions, email templates, cron endpoint
