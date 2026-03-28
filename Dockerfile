@@ -22,9 +22,13 @@ COPY . .
 ARG DATABASE_URL="postgresql://dummy"
 ENV DATABASE_URL=${DATABASE_URL}
 RUN npx prisma generate
+ARG NEXT_PUBLIC_GA_ID=""
+ARG NEXT_PUBLIC_GA_CONVERSION_LABEL=""
 RUN TELEGRAM_ALLOWED_USER_ID="0" \
     TELEGRAM_WEBHOOK_SECRET="dummy" \
     TELEGRAM_BOT_TOKEN="dummy" \
+    NEXT_PUBLIC_GA_ID="${NEXT_PUBLIC_GA_ID}" \
+    NEXT_PUBLIC_GA_CONVERSION_LABEL="${NEXT_PUBLIC_GA_CONVERSION_LABEL}" \
     npm run build
 
 # ──────────────────────────────────────────────────────────
