@@ -15,6 +15,18 @@ export async function getClients() {
   if (!session || session.role !== "ADMIN") return [];
 
   return prisma.client.findMany({
+    where: { archived: false },
+    orderBy: { name: "asc" },
+  });
+}
+
+export async function getArchivedClients() {
+  const session = await auth();
+  if (!session || session.role !== "ADMIN") return [];
+
+  return prisma.client.findMany({
+    where: { archived: true },
+    select: { id: true, name: true },
     orderBy: { name: "asc" },
   });
 }
@@ -233,14 +245,47 @@ export async function deleteClient(id: string): Promise<ClientResult> {
 
   if (!client) return { success: false, error: "Cliente no encontrado" };
 
-  if (client._count.sessions > 0 || client._count.balanceEntries > 0) {
-    return {
-      success: false,
-      error: "Este cliente tiene sesiones o balances registrados y no puede ser eliminado",
-    };
+  const hasBalanceHistory = client._count.balanceEntries > 0;
+
+  if (hasBalanceHistory) {
+    // Archive: wipe all personal data but keep the record for balance history
+    await prisma.$transaction([
+      prisma.session.deleteMany({ where: { clientId: id } }),
+      prisma.exam.deleteMany({ where: { clientId: id } }),
+      prisma.progressNote.deleteMany({ where: { clientId: id } }),
+      prisma.suggestion.deleteMany({ where: { clientId: id } }),
+      prisma.client.update({
+        where: { id },
+        data: {
+          archived: true,
+          student: null,
+          modalidad: null,
+          grado: null,
+          celular: null,
+          direccion: null,
+          correo: null,
+          username: null,
+          password: null,
+          requirePasswordChange: false,
+          hp: 100,
+          xp: 0,
+          level: 1,
+          characterName: null,
+          characterClass: null,
+        },
+      }),
+    ]);
+  } else {
+    // No balance history — hard delete everything
+    await prisma.$transaction([
+      prisma.session.deleteMany({ where: { clientId: id } }),
+      prisma.exam.deleteMany({ where: { clientId: id } }),
+      prisma.progressNote.deleteMany({ where: { clientId: id } }),
+      prisma.suggestion.deleteMany({ where: { clientId: id } }),
+      prisma.client.delete({ where: { id } }),
+    ]);
   }
 
-  await prisma.client.delete({ where: { id } });
   return { success: true };
 }
 

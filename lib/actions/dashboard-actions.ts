@@ -196,17 +196,18 @@ const _getYearComparisonData = unstable_cache(
       orderBy: { year: "asc" },
     });
 
-    const years = distinctYears.map((b) => b.year).slice(-3);
+    const now = new Date();
+    const currentYear = now.getFullYear();
+    const currentMonth = now.getMonth() + 1;
+
+    const allYears = distinctYears.map((b) => b.year);
+    const years = [currentYear - 2, currentYear - 1, currentYear].filter((yr) => allYears.includes(yr));
     if (years.length === 0) return { years: [], annualRevenue: {}, monthlyData: {} };
 
     const balances = await prisma.monthlyBalance.findMany({
       where: { year: { in: years } },
       include: { entries: true },
     });
-
-    const now = new Date();
-    const currentYear = now.getFullYear();
-    const currentMonth = now.getMonth() + 1;
 
     const annualRevenue: Record<number, number> = {};
     const monthlyData: YearComparisonData["monthlyData"] = {};
