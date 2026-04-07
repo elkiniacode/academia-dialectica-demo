@@ -51,7 +51,7 @@ Run a single test file: `npx vitest run __tests__/path/to/file.test.ts`
 
 ### Authentication & Authorization
 
-Dual auth system in `lib/auth.ts` + `middleware.ts`:
+Dual auth system in `lib/auth.ts` + `proxy.ts`:
 - **Admin:** Google OAuth, whitelisted via `ADMIN_EMAIL` env var. JWT stores access/refresh tokens for Google Calendar API with auto-refresh.
 - **Student:** Credentials provider (username + bcrypt password). `requirePasswordChange` flag forces new students to `/client/change-password`.
 - **RBAC:** `Role` enum (ADMIN, CLIENT) on Client model. Middleware enforces route access. All Server Actions verify role. CLIENT actions use `session.userId` for IDOR prevention.
