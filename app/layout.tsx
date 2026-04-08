@@ -1,6 +1,9 @@
 import type { Metadata } from "next";
+import { Suspense } from "react";
 import { SessionProvider } from "next-auth/react";
 import Script from "next/script";
+import { PostHogProvider } from "@/components/posthog-provider";
+import { PostHogPageView } from "@/components/posthog-pageview";
 import "./globals.css";
 
 export const metadata: Metadata = {
@@ -35,7 +38,14 @@ export default function RootLayout({
             </Script>
           </>
         )}
-        <SessionProvider>{children}</SessionProvider>
+        <SessionProvider>
+          <PostHogProvider>
+            <Suspense fallback={null}>
+              <PostHogPageView />
+            </Suspense>
+            {children}
+          </PostHogProvider>
+        </SessionProvider>
       </body>
     </html>
   );

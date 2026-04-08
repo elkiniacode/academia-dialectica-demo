@@ -155,3 +155,15 @@ model Suggestion {
 
   @@map("suggestions")
 }
+
+model PublicFeedback {
+  id        String   @id @default(uuid()) @db.Uuid
+  type      String   // GENERAL_ISSUE, GENERAL_IDEA, GAME_RATING
+  rating    Int?     // 1-5 stars (only for GAME_RATING)
+  message   String?
+  email     String?
+  page      String   @default("/")
+  createdAt DateTime @default(now())
+
+  @@map("public_feedback")
+}

@@ -33,6 +33,7 @@ Run a single test file: `npx vitest run __tests__/path/to/file.test.ts`
 - **AI:** Vercel AI SDK **v4** (`ai@^4`) — do NOT upgrade to v6, API is incompatible
   - Claude (`claude-sonnet-4-20250514`) for vision analysis + chat
   - OpenAI (`gpt-4o-mini`) as alternate chat provider
+- **Analytics:** PostHog (`posthog-js`) for funnel tracking + Google Analytics (gtag.js) for conversions
 - **Testing:** Vitest 4.1 + happy-dom + Testing Library
 - **CI:** GitHub Actions (Node 20) — security audit + unit tests on push/PR to main
 
@@ -43,7 +44,7 @@ Run a single test file: `npx vitest run __tests__/path/to/file.test.ts`
 - `app/` — Next.js App Router: `api/`, `admin/`, `client/`, `login/`
 - `components/` — React components (`welcome/` = public page, `dashboard/` = admin charts)
 - `lib/` — Business logic: `auth.ts`, `prisma.ts`, `password.ts`, `email.ts`
-- `lib/actions/` — Server Actions (client, exam, gamification, balance, dashboard, leads)
+- `lib/actions/` — Server Actions (client, exam, gamification, balance, dashboard, leads, feedback)
 - `prisma/` — Schema + migrations
 - `types/` — TypeScript type definitions
 - `__tests__/` — Vitest unit tests
@@ -77,4 +78,4 @@ Dual auth system in `lib/auth.ts` + `proxy.ts`:
 - Tests live in `__tests__/` mirroring source structure
 - Environment: happy-dom (configured in `vitest.config.ts`)
 - Path aliases (`@/`) resolved via `vite-tsconfig-paths`
-- Current coverage: password validation, client login/IDOR, client actions, email templates, cron endpoint
+- Current coverage: password validation, client login/IDOR, client actions, email templates, cron endpoint, feedback actions

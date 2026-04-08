@@ -5,6 +5,10 @@ import { useRouter } from "next/navigation";
 import { NeuronCanvas } from "./neuron-canvas";
 import { SpriteAnimator } from "../sprite-animator";
 import { createLead } from "@/lib/actions/lead-actions";
+import { trackGameStarted, trackGameCompleted, trackGameOver, trackRegistrationSubmitted } from "@/lib/analytics";
+import { createPublicFeedback } from "@/lib/actions/feedback-actions";
+import { useGameTour } from "@/hooks/use-game-tour";
+import { GameTour } from "./game-tour";
 
 const PALETTE_NAMES = ["Cian", "Púrpura", "Verde Azulado", "Azul", "Rosa"];
 
@@ -39,10 +43,17 @@ export function HeroSection() {
   const [formMode, setFormMode] = useState<"game" | "standalone">("game");
   const [gameCharacterClass, setGameCharacterClass] = useState<string | null>(null);
   const [showCharacterStep, setShowCharacterStep] = useState(false);
+  const [gameRating, setGameRating] = useState(0);
+  const [gameComment, setGameComment] = useState("");
+  const [showGameComment, setShowGameComment] = useState(false);
+  const [ratingSubmitted, setRatingSubmitted] = useState(false);
 
   const difficultyRef = useRef(difficulty);
   const timeLeftRef = useRef(timeLeft);
   const scoreRef = useRef(score);
+  const gameContainerRef = useRef<HTMLDivElement>(null);
+
+  const { tourStep, isTourActive, startTourIfFirstTime, nextStep, skipTour, replayTour } = useGameTour();
 
   // Detect phone landscape (max-height: 500px excludes tablets/desktops)
   useEffect(() => {
@@ -60,20 +71,21 @@ export function HeroSection() {
   }, [difficulty, timeLeft, score]);
 
   useEffect(() => {
-    if (!gameActive || gameOver) return;
+    if (!gameActive || gameOver || isTourActive) return;
 
     const intervalId = setInterval(() => {
       if (timeLeftRef.current <= 1) {
         setGameOver(true);
         setGameActive(false);
         setTimeLeft(0);
+        trackGameOver(difficultyRef.current, scoreRef.current);
       } else {
         setTimeLeft((prev) => prev - 1);
       }
     }, 1000);
 
     return () => clearInterval(intervalId);
-  }, [gameActive, gameOver]);
+  }, [gameActive, gameOver, isTourActive]);
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -101,6 +113,11 @@ export function HeroSection() {
     ]);
 
     if (result.success) {
+      trackRegistrationSubmitted(
+        formMode === "game" ? difficulty : undefined,
+        formMode === "game" ? finalCerebritos : undefined,
+        formMode,
+      );
       // Refresh canvas to ambient state as soon as the game flow is done
       setGameSessionId((prev) => prev + 1);
       router.push("/gracias");
@@ -128,6 +145,10 @@ export function HeroSection() {
     setGameCharacterClass(null);
     setFormMode("game");
     setGameSessionId((prev) => prev + 1);
+    setGameRating(0);
+    setGameComment("");
+    setShowGameComment(false);
+    setRatingSubmitted(false);
   }, []);
 
   const quitGame = useCallback(() => {
@@ -153,12 +174,16 @@ export function HeroSection() {
     const mult = DIFFICULTY_MULTIPLIER[difficultyRef.current];
     const basePoints = scoreRef.current * 50;
     const timeBonus = timeLeftRef.current * 10;
-    setFinalCerebritos(Math.floor((basePoints + timeBonus) * mult));
+    const cerebritos = Math.floor((basePoints + timeBonus) * mult);
+    setFinalCerebritos(cerebritos);
+    trackGameCompleted(difficultyRef.current, cerebritos, timeLeftRef.current, scoreRef.current);
   }, []);
 
   const handleDifficultyStart = (d: Difficulty) => {
     setDifficulty(d);
     startGame();
+    trackGameStarted(d);
+    startTourIfFirstTime();
   };
 
   const timerMinutes = Math.floor(timeLeft / 60);
@@ -246,6 +271,7 @@ export function HeroSection() {
 
         {/* RIGHT COLUMN: The Floating Game Container */}
         <div
+          ref={gameContainerRef}
           className={`relative w-full rounded-[2.5rem] overflow-hidden shadow-2xl shadow-blue-900/20 ring-1 ring-gray-900/5 bg-gradient-to-br from-blue-600 via-blue-700 to-indigo-800 transition-all duration-500 ease-in-out ${
             isLandscape ? 'aspect-auto h-[70vh]' : 'aspect-square'
           } lg:aspect-auto lg:h-[600px] ${
@@ -261,6 +287,7 @@ export function HeroSection() {
             targetPaletteIdx={targetPaletteIdx}
             score={score}
             difficulty={difficulty}
+            paused={isTourActive}
             onNeuronClicked={handleNeuronClicked}
             onGameComplete={handleGameComplete}
           />
@@ -275,10 +302,11 @@ export function HeroSection() {
               <span className="text-base sm:text-xl font-bold tracking-wider uppercase">
                 {PALETTE_NAMES[targetPaletteIdx]}
               </span>
-              <span className="bg-white text-blue-900 px-2 py-0.5 sm:px-3 sm:py-1 rounded-full text-[11px] sm:text-sm font-bold">
+              <span data-tour="score" className="bg-white text-blue-900 px-2 py-0.5 sm:px-3 sm:py-1 rounded-full text-[11px] sm:text-sm font-bold">
                 Puntos: {score}
               </span>
               <span
+                data-tour="timer"
                 className={`px-2 py-0.5 sm:px-3 sm:py-1 rounded-full text-[11px] sm:text-sm font-bold tabular-nums ${
                   timeLeft <= 30
                     ? "bg-red-500/70 text-white animate-pulse"
@@ -292,14 +320,35 @@ export function HeroSection() {
                   Faltan: {remaining}
                 </span>
               )}
+              {!isTourActive && (
+                <button
+                  type="button"
+                  onClick={replayTour}
+                  className="ml-1 text-white/70 hover:text-white transition-colors"
+                  aria-label="Ayuda"
+                  title="Ayuda"
+                >
+                  ❓
+                </button>
+              )}
               <button
                 onClick={quitGame}
-                className="ml-2 text-white/70 hover:text-white font-bold transition-colors"
+                className="ml-1 text-white/70 hover:text-white font-bold transition-colors"
                 aria-label="Salir del juego"
               >
                 ✕
               </button>
             </div>
+          )}
+
+          {/* LAYER 3: Game Tour overlay */}
+          {gameActive && isTourActive && (
+            <GameTour
+              step={tourStep}
+              onNext={nextStep}
+              onSkip={skipTour}
+              containerRef={gameContainerRef}
+            />
           )}
         </div>
       </div>
@@ -532,6 +581,57 @@ export function HeroSection() {
                 <div className="bg-blue-50 border border-blue-100 rounded-2xl p-6 mb-8">
                   <p className="text-gray-700 mb-2 font-medium">Acabas de desbloquear tu amigo digital y ganaste</p>
                   <p className="text-4xl font-bold text-blue-600">{finalCerebritos} Cerebritos</p>
+                </div>
+
+                {/* Game Rating */}
+                <div className="mb-6 text-center">
+                  <p className="text-gray-500 text-sm mb-2">
+                    {ratingSubmitted ? "¡Gracias por tu calificación!" : "Califica tu experiencia"}
+                  </p>
+                  <div className="flex justify-center gap-1">
+                    {[1, 2, 3, 4, 5].map((star) => (
+                      <button
+                        key={star}
+                        type="button"
+                        disabled={ratingSubmitted}
+                        onClick={async () => {
+                          setGameRating(star);
+                          if (!showGameComment) setShowGameComment(true);
+                        }}
+                        className={`text-2xl transition-transform hover:scale-110 ${
+                          ratingSubmitted ? "cursor-default" : "cursor-pointer"
+                        } ${star <= gameRating ? "text-yellow-400" : "text-gray-300"}`}
+                      >
+                        ★
+                      </button>
+                    ))}
+                  </div>
+                  {showGameComment && !ratingSubmitted && (
+                    <div className="mt-3 animate-[fadeIn_0.3s_ease-out]">
+                      <textarea
+                        value={gameComment}
+                        onChange={(e) => setGameComment(e.target.value)}
+                        maxLength={2000}
+                        rows={2}
+                        placeholder="Deja un comentario... (opcional)"
+                        className="w-full bg-gray-50 border border-gray-200 rounded-lg p-2 text-sm text-gray-700 placeholder-gray-400 resize-none focus:outline-none focus:border-blue-400 transition-colors"
+                      />
+                      <button
+                        type="button"
+                        onClick={async () => {
+                          await createPublicFeedback({
+                            type: "GAME_RATING",
+                            rating: gameRating,
+                            message: gameComment || undefined,
+                          });
+                          setRatingSubmitted(true);
+                        }}
+                        className="mt-1 px-4 py-1 bg-blue-600 hover:bg-blue-700 text-white text-xs font-medium rounded-lg transition-colors"
+                      >
+                        Enviar
+                      </button>
+                    </div>
+                  )}
                 </div>
 
                 <p className="text-gray-600 mb-4 text-left text-sm leading-relaxed">

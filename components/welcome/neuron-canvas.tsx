@@ -292,6 +292,7 @@ interface NeuronCanvasProps {
   targetPaletteIdx?: number | null;
   score?: number;
   difficulty?: Difficulty;
+  paused?: boolean;
   onNeuronClicked?: (correct: boolean, remaining: number) => void;
   onGameComplete?: () => void;
 }
@@ -301,6 +302,7 @@ export function NeuronCanvas({
   targetPaletteIdx = null,
   score = 0,
   difficulty = "medium",
+  paused = false,
   onNeuronClicked,
   onGameComplete,
 }: NeuronCanvasProps) {
@@ -311,6 +313,7 @@ export function NeuronCanvas({
   const targetPaletteIdxRef = useRef(targetPaletteIdx);
   const scoreRef = useRef(score);
   const difficultyRef = useRef(difficulty);
+  const pausedRef = useRef(paused);
   const onNeuronClickedRef = useRef(onNeuronClicked);
   const onGameCompleteRef = useRef(onGameComplete);
 
@@ -321,6 +324,7 @@ export function NeuronCanvas({
     targetPaletteIdxRef.current = targetPaletteIdx;
     scoreRef.current = score;
     difficultyRef.current = difficulty;
+    pausedRef.current = paused;
     onNeuronClickedRef.current = onNeuronClicked;
     onGameCompleteRef.current = onGameComplete;
   }, [gameActive, targetPaletteIdx, score, difficulty, onNeuronClicked, onGameComplete]);
@@ -910,13 +914,17 @@ export function NeuronCanvas({
       if (lastTime === 0) lastTime = time;
       const dtMs = Math.min(time - lastTime, 50);
       lastTime = time;
-      animTime += dtMs;
 
-      // Fixed-step physics at 60fps regardless of display refresh rate
-      physicsAccum += dtMs / 1000;
-      while (physicsAccum >= PHYSICS_STEP) {
-        update(PHYSICS_STEP);
-        physicsAccum -= PHYSICS_STEP;
+      // When paused, keep rendering but freeze physics and animation time
+      if (!pausedRef.current) {
+        animTime += dtMs;
+
+        // Fixed-step physics at 60fps regardless of display refresh rate
+        physicsAccum += dtMs / 1000;
+        while (physicsAccum >= PHYSICS_STEP) {
+          update(PHYSICS_STEP);
+          physicsAccum -= PHYSICS_STEP;
+        }
       }
 
       draw(animTime);

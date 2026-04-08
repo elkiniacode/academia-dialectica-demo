@@ -49,3 +49,4 @@ Unknown clients are skipped (returned in `skippedUnknownClients`) rather than ca
 - [Next.js monthly balance app](./01_implementation.md) — full Next.js 16 App Router scaffold, NextAuth v5 Google OAuth, MonthlyBalance schema, server actions, and UI components
 - [Client management & Telegram bot](./02_implementation.md) — Client model extension, web CRUD page, Telegram webhook, auth token refresh fix, nav bar
 - [Public welcome page & admin restructuring](./04_implementation.md) — Public landing page (hero/testimonials/stories), `/admin/*` area with proxy middleware, Testimonial and Story models, Next.js 16 `proxy.ts` convention
+- [Guided tour, PostHog analytics & public feedback](./22_implementation_guided_tour_and_feedback.md) — FTUE tour with canvas pause, PostHog funnel (game_started → registration_submitted), Supabase-style navbar feedback, star rating in completion modal, PublicFeedback model
