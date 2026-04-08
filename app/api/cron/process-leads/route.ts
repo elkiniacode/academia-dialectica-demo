@@ -34,15 +34,15 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
-  const fourDaysAgo = new Date();
-  fourDaysAgo.setDate(fourDaysAgo.getDate() - 4);
+  const twoDaysAgo = new Date();
+  twoDaysAgo.setDate(twoDaysAgo.getDate() - 2);
 
-  // Find unprocessed leads with a chosen character class, created >= 4 days ago
+  // Find unprocessed leads with a chosen character class, created >= 2 days ago
   const leads = await prisma.lead.findMany({
     where: {
       processedAt: null,
       characterClass: { not: null },
-      createdAt: { lte: fourDaysAgo },
+      createdAt: { lte: twoDaysAgo },
     },
   });
 
