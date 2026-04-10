@@ -19,6 +19,8 @@ services:
       target: prod
       args:
         DATABASE_URL: ${DATABASE_URL}
+        NEXT_PUBLIC_POSTHOG_KEY: ${NEXT_PUBLIC_POSTHOG_KEY}
+        NEXT_PUBLIC_POSTHOG_HOST: ${NEXT_PUBLIC_POSTHOG_HOST}
     ports:
       - "3000:3000"
     env_file:
