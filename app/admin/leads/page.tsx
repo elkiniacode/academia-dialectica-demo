@@ -44,6 +44,9 @@ export default async function LeadsPage() {
                     Teléfono
                   </th>
                   <th className="text-left px-4 py-3 text-sm font-semibold text-gray-700">
+                    Fuente
+                  </th>
+                  <th className="text-left px-4 py-3 text-sm font-semibold text-gray-700">
                     Fecha
                   </th>
                 </tr>
@@ -65,6 +68,9 @@ export default async function LeadsPage() {
                     </td>
                     <td className="px-4 py-3 text-sm text-gray-800">
                       {lead.phone || "—"}
+                    </td>
+                    <td className="px-4 py-3 text-sm text-gray-800">
+                      {lead.source || "—"}
                     </td>
                     <td className="px-4 py-3 text-sm text-gray-500">
                       {lead.createdAt.toLocaleDateString("es-CO", {

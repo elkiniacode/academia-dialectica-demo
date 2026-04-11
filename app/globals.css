@@ -18,6 +18,19 @@
   animation: character-glow 2s ease-in-out infinite;
 }
 
+/* Parent hook hero button — warm glow pulse */
+@keyframes parent-pulse {
+  0%, 100% { box-shadow: 0 4px 14px 0 rgba(249, 115, 22, 0.3); }
+  50% { box-shadow: 0 4px 24px 6px rgba(249, 115, 22, 0.5); }
+}
+.animate-parent-pulse {
+  animation: parent-pulse 2s ease-in-out infinite;
+}
+.animate-parent-pulse:hover {
+  animation: none;
+  box-shadow: 0 4px 20px 4px rgba(249, 115, 22, 0.5);
+}
+
 /* Fade-in for tab content transitions */
 @keyframes fadeIn {
   from { opacity: 0; transform: translate3d(0, 5px, 0); }

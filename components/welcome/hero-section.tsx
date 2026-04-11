@@ -16,7 +16,13 @@ type Difficulty = "easy" | "medium" | "hard";
 
 const DIFFICULTY_MULTIPLIER = { easy: 1.0, medium: 1.5, hard: 2.0 } as const;
 
-export function HeroSection() {
+interface HeroSectionProps {
+  onParentHookClick?: () => void;
+  parentSource?: boolean;
+  onParentFormOpened?: () => void;
+}
+
+export function HeroSection({ onParentHookClick, parentSource, onParentFormOpened }: HeroSectionProps = {}) {
   const router = useRouter();
 
   // ==========================================
@@ -40,7 +46,7 @@ export function HeroSection() {
   const [selectedClass, setSelectedClass] = useState<string | null>(null);
   const [showClassModal, setShowClassModal] = useState(false);
   const [isLandscape, setIsLandscape] = useState(false);
-  const [formMode, setFormMode] = useState<"game" | "standalone">("game");
+  const [formMode, setFormMode] = useState<"game" | "standalone" | "parent">("game");
   const [gameCharacterClass, setGameCharacterClass] = useState<string | null>(null);
   const [showCharacterStep, setShowCharacterStep] = useState(false);
   const [gameRating, setGameRating] = useState(0);
@@ -54,6 +60,16 @@ export function HeroSection() {
   const gameContainerRef = useRef<HTMLDivElement>(null);
 
   const { tourStep, isTourActive, startTourIfFirstTime, nextStep, skipTour, replayTour } = useGameTour();
+
+  // Open registration form in parent mode when triggered by provider
+  useEffect(() => {
+    if (parentSource) {
+      setFormMode("parent");
+      setFormSubmitted(false);
+      setShowForm(true);
+      onParentFormOpened?.();
+    }
+  }, [parentSource, onParentFormOpened]);
 
   // Detect phone landscape (max-height: 500px excludes tablets/desktops)
   useEffect(() => {
@@ -105,6 +121,7 @@ export function HeroSection() {
       gameScore: formMode === "game" ? finalCerebritos : undefined,
       difficulty: formMode === "game" ? difficulty : undefined,
       characterClass: formMode === "game" ? (gameCharacterClass ?? undefined) : undefined,
+      source: formMode === "parent" ? "parent" : undefined,
     };
 
     const [result] = await Promise.all([
@@ -265,6 +282,14 @@ export function HeroSection() {
               >
                 Conoce Más
               </button>
+              {onParentHookClick && (
+                <button
+                  onClick={onParentHookClick}
+                  className="bg-gradient-to-r from-orange-500 to-amber-500 text-white text-center rounded-full px-8 py-3 font-semibold shadow-lg shadow-orange-500/30 hover:-translate-y-1 transition-all duration-300 animate-parent-pulse"
+                >
+                  ¿Se aburre estudiando?
+                </button>
+              )}
             </div>
           </div>
         )}
@@ -455,7 +480,7 @@ export function HeroSection() {
       )}
 
       {/* Completion modal */}
-      {(gameComplete || (formMode === "standalone" && (showForm || formSubmitted))) && (
+      {(gameComplete || ((formMode === "standalone" || formMode === "parent") && (showForm || formSubmitted))) && (
         <div className="fixed inset-0 flex items-center justify-center bg-gray-900/80 backdrop-blur-sm p-4 overflow-y-auto" style={{ zIndex: 60 }}>
           <div className="bg-white p-8 md:p-10 rounded-3xl max-w-lg w-full text-center shadow-2xl ring-1 ring-gray-900/5 my-auto">
             {formSubmitted ? (
@@ -491,7 +516,7 @@ export function HeroSection() {
             ) : showForm ? (
               <div className="animate-[fadeIn_0.5s_ease-out]">
                 <h2 className="text-3xl font-bold tracking-tight text-gray-900 mb-2">
-                  {formMode === "standalone" ? "Regístrate para más información" : "Reclama tu Premio"}
+                  {formMode === "parent" ? "Sé parte de la familia" : formMode === "standalone" ? "Regístrate para más información" : "Reclama tu Premio"}
                 </h2>
                 <p className="text-gray-500 mb-8">Ingresa tus datos para continuar.</p>
 
@@ -530,7 +555,7 @@ export function HeroSection() {
                   onClick={() => {
                     setShowForm(false);
                     setErrorMsg("");
-                    if (formMode === "standalone") setFormMode("game");
+                    if (formMode === "standalone" || formMode === "parent") setFormMode("game");
                   }}
                   className="mt-6 text-sm font-semibold text-gray-500 hover:text-blue-600 transition-colors"
                 >

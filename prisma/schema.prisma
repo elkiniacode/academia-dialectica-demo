@@ -114,6 +114,7 @@ model Lead {
   gameScore      Int?
   difficulty     String?
   characterClass String?
+  source         String?
   processedAt    DateTime?
   createdAt      DateTime  @default(now())
 

@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { prisma } from "@/lib/prisma";
 import { PublicNavbar } from "@/components/welcome/public-navbar";
-import { HeroSection } from "@/components/welcome/hero-section";
+import { ParentHookProvider } from "@/components/welcome/parent-hook-provider";
 import { FeaturesSection } from "@/components/welcome/features-section";
 import { ModalitiesSection } from "@/components/welcome/modalities-section";
 import { TestimonialsSection } from "@/components/welcome/testimonials-section";
@@ -153,7 +153,7 @@ export default async function WelcomePage() {
       <PublicNavbar />
       <main>
         <SectionTracker />
-        <HeroSection />
+        <ParentHookProvider />
         <FeaturesSection />
         <ModalitiesSection />
         <TestimonialsSection testimonials={testimonials} />

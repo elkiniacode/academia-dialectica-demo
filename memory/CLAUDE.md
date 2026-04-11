@@ -50,3 +50,5 @@ Unknown clients are skipped (returned in `skippedUnknownClients`) rather than ca
 - [Client management & Telegram bot](./02_implementation.md) — Client model extension, web CRUD page, Telegram webhook, auth token refresh fix, nav bar
 - [Public welcome page & admin restructuring](./04_implementation.md) — Public landing page (hero/testimonials/stories), `/admin/*` area with proxy middleware, Testimonial and Story models, Next.js 16 `proxy.ts` convention
 - [Guided tour, PostHog analytics & public feedback](./22_implementation_guided_tour_and_feedback.md) — FTUE tour with canvas pause, PostHog funnel (game_started → registration_submitted), Supabase-style navbar feedback, star rating in completion modal, PublicFeedback model
+- [Parent hook: video modal, bubble & source tracking](./23_parents_button_urgency.md) — Targeting mothers with pain-point CTAs, YouTube video modal, floating bubble with IntersectionObserver, Lead source field, PostHog parent funnel
+- [Lessons learned: parent hook](./23_learning_parent_urgency.md) — useEffect cleanup discipline, viewport-level thinking, hydration timing, hover stops animation, scroll lock, observer efficiency

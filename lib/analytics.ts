@@ -22,6 +22,22 @@ export function trackGameOver(difficulty: string, score: number) {
   posthog.capture("game_over", { difficulty, score });
 }
 
+export function trackParentHookClicked(trigger: "hero_button" | "floating_bubble") {
+  posthog.capture("parent_hook_clicked", { trigger });
+}
+
+export function trackParentModalViewed() {
+  posthog.capture("parent_modal_viewed");
+}
+
+export function trackParentVideoEngaged() {
+  posthog.capture("parent_video_engaged");
+}
+
+export function trackParentRegistrationStarted() {
+  posthog.capture("parent_registration_started");
+}
+
 export function trackRegistrationSubmitted(
   difficulty: string | undefined,
   cerebritos: number | undefined,

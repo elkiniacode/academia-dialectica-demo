@@ -20,7 +20,9 @@ Plataforma integral de gestion economica, academica y marketing para Academia Di
 - **Hero Section** con animacion de neuronas biologicas en HTML5 Canvas — fisica de fuerzas de resorte, sprites procedurales, parallax, chispas electricas en curvas Bezier
 - **Neuron Hunt:** mini-juego interactivo donde el jugador elimina neuronas de un color objetivo dentro de un temporizador de 2 minutos, con dificultad escalable, repulsion del mouse y muros en L
 - **Captura de leads:** formulario post-juego (nombre, email, telefono) con puntuacion del juego guardada
+- **Parent Hook:** boton animado "¿Se aburre estudiando?" + burbuja flotante "¿Cansada de pelear por las tareas?" → modal con video de YouTube + texto persuasivo + CTA "Se parte de la familia" con tracking PostHog completo y campo `source` en leads
 - **Testimonios y casos de exito** con toggles de visibilidad
+- **Analytics:** PostHog (section scroll tracking, pageview tagging, funnel de padres) + Google Analytics (conversiones)
 - **SEO:** Open Graph, imagen OG dinamica, JSON-LD, sitemap, robots.txt
 
 ### Portal Administrativo (`/admin/*`)
@@ -144,6 +146,9 @@ Notas detalladas de cada funcionalidad en el directorio `memory/`:
 | `11_implementation.md` | RBAC y portal estudiantil |
 | `12_implementation.md` | Pagina de detalle de cliente (admin) |
 | `13_implementation.md` | Endurecimiento de seguridad |
+| `22_implementation_guided_tour_and_feedback.md` | Tour guiado, PostHog analytics y feedback publico |
+| `23_parents_button_urgency.md` | Parent Hook: video modal, burbuja flotante y tracking de fuente |
+| `23_learning_parent_urgency.md` | Lecciones aprendidas: cleanup de effects, UI por viewport, hidratacion |
 
 ## Registro del Webhook de Telegram
 

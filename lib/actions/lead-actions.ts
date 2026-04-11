@@ -13,6 +13,7 @@ export async function createLead(data: {
   gameScore?: number;
   difficulty?: string;
   characterClass?: string;
+  source?: string;
 }): Promise<{ success: boolean; error?: string }> {
   const name = data.name?.trim();
   const email = data.email?.trim().toLowerCase();
@@ -20,6 +21,7 @@ export async function createLead(data: {
   const gameScore = data.gameScore ?? null;
   const difficulty = data.difficulty?.trim() || null;
   const characterClass = data.characterClass?.trim() || null;
+  const source = data.source?.trim() || null;
 
   if (!name || !email) {
     return { success: false, error: "El nombre y correo son obligatorios." };
@@ -36,7 +38,7 @@ export async function createLead(data: {
 
   try {
     await prisma.lead.create({
-      data: { name, email, phone, gameScore, difficulty, characterClass },
+      data: { name, email, phone, gameScore, difficulty, characterClass, source },
     });
 
     revalidatePath("/admin/leads");
