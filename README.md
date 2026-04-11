@@ -149,6 +149,8 @@ Notas detalladas de cada funcionalidad en el directorio `memory/`:
 | `22_implementation_guided_tour_and_feedback.md` | Tour guiado, PostHog analytics y feedback publico |
 | `23_parents_button_urgency.md` | Parent Hook: video modal, burbuja flotante y tracking de fuente |
 | `23_learning_parent_urgency.md` | Lecciones aprendidas: cleanup de effects, UI por viewport, hidratacion |
+| `09_wh_and_yn_question.md` | Motor de preguntas WH y Yes/No estructuradas (English Academy) |
+| `09_learning_wh_and_yn_question.md` | Lecciones aprendidas: contratos de esquema, refs, evaluacion IA, UX educativa |
 
 ## Registro del Webhook de Telegram
 
