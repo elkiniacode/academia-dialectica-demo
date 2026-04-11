@@ -38,6 +38,10 @@ export function trackParentRegistrationStarted() {
   posthog.capture("parent_registration_started");
 }
 
+export function trackCTAClicked(cta: "empieza_juego" | "conoce_mas" | "reclama_premio" | "jugar_de_nuevo") {
+  posthog.capture("cta_clicked", { cta_name: cta });
+}
+
 export function trackRegistrationSubmitted(
   difficulty: string | undefined,
   cerebritos: number | undefined,

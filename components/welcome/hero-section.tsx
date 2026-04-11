@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import { NeuronCanvas } from "./neuron-canvas";
 import { SpriteAnimator } from "../sprite-animator";
 import { createLead } from "@/lib/actions/lead-actions";
-import { trackGameStarted, trackGameCompleted, trackGameOver, trackRegistrationSubmitted } from "@/lib/analytics";
+import { trackGameStarted, trackGameCompleted, trackGameOver, trackRegistrationSubmitted, trackCTAClicked } from "@/lib/analytics";
 import { createPublicFeedback } from "@/lib/actions/feedback-actions";
 import { useGameTour } from "@/hooks/use-game-tour";
 import { GameTour } from "./game-tour";
@@ -267,13 +267,14 @@ export function HeroSection({ onParentHookClick, parentSource, onParentFormOpene
             {/* CTAs - Redesigned & Flex wrapped */}
             <div className="flex flex-col sm:flex-row gap-4">
               <button
-                onClick={() => setShowRules(true)}
+                onClick={() => { trackCTAClicked("empieza_juego"); setShowRules(true); }}
                 className="bg-blue-600 text-white text-center rounded-full px-8 py-3 font-semibold shadow-lg shadow-blue-600/30 hover:-translate-y-1 transition-all duration-300"
               >
                 Empieza el Juego
               </button>
               <button
                 onClick={() => {
+                  trackCTAClicked("conoce_mas");
                   setFormMode("standalone");
                   setFormSubmitted(false);
                   setShowForm(true);
@@ -668,13 +669,14 @@ export function HeroSection({ onParentHookClick, parentSource, onParentFormOpene
 
                 <div className="flex flex-col gap-3">
                   <button
-                    onClick={() => setShowCharacterStep(true)}
+                    onClick={() => { trackCTAClicked("reclama_premio"); setShowCharacterStep(true); }}
                     className="w-full bg-blue-600 hover:bg-blue-700 hover:-translate-y-1 shadow-lg shadow-blue-600/30 text-white font-bold py-4 rounded-xl transition-all"
                   >
                     Reclama tu Premio
                   </button>
                   <button
                     onClick={() => {
+                      trackCTAClicked("jugar_de_nuevo");
                       setGameComplete(false);
                       setShowRules(true);
                     }}
