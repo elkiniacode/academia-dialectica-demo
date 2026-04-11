@@ -33,7 +33,7 @@ Run a single test file: `npx vitest run __tests__/path/to/file.test.ts`
 - **AI:** Vercel AI SDK **v4** (`ai@^4`) — do NOT upgrade to v6, API is incompatible
   - Claude (`claude-sonnet-4-20250514`) for vision analysis + chat
   - OpenAI (`gpt-4o-mini`) as alternate chat provider
-- **Analytics:** PostHog (`posthog-js`) for funnel tracking + Google Analytics (gtag.js) for conversions
+- **Analytics:** PostHog (`posthog-js`) for funnel tracking + section scroll tracking + Google Analytics (gtag.js) for conversions
 - **Testing:** Vitest 4.1 + happy-dom + Testing Library
 - **CI:** GitHub Actions (Node 20) — security audit + unit tests on push/PR to main
 
@@ -63,6 +63,15 @@ Dual auth system in `lib/auth.ts` + `proxy.ts`:
 - **API Routes** (`app/api/`) only for: streaming chat (`/api/chat`), image analysis (`/api/analyze-client`, `/api/analyze-clients-bulk`), cron jobs (`/api/cron/process-leads`), Telegram webhook, OG images.
 - **AI chat** uses Vercel AI SDK tool calling (7 tools with Zod schemas) to query DB via existing server actions. PII fields (`celular`, `direccion`, `correo`, `password`, `username`) are redacted before sending to AI.
 - **Google Calendar** sync for sessions, **Gmail API** for automated lead emails (NOT Nodemailer — Railway blocks SMTP).
+
+### Analytics & Tracking
+
+- **PostHog** initialized in `components/posthog-provider.tsx` with manual pageview capture (`capture_pageview: false`)
+- **Pageviews** (`components/posthog-pageview.tsx`): every `$pageview` includes a `page_name` property (Landing, Login, Gracias, Admin:*, Portal:*)
+- **Section tracking** (`components/welcome/section-tracker.tsx`): fires `section_viewed` events with `section_name` as users scroll past landing page sections (IntersectionObserver, once per section per session)
+- **Custom events** (`lib/analytics.ts`): `game_started`, `game_completed`, `game_over`, `registration_submitted` — called from `hero-section.tsx`
+- **Recommended funnel**: `$pageview (Landing)` → `game_started` → `game_completed` → `registration_submitted`
+- **Google Analytics** (`gtag.js`): conversion event on `/gracias` via `GraciasConversion` component
 
 ### Key Constraints
 

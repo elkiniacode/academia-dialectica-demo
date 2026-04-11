@@ -7,6 +7,7 @@ import { ModalitiesSection } from "@/components/welcome/modalities-section";
 import { TestimonialsSection } from "@/components/welcome/testimonials-section";
 import { StoriesSection } from "@/components/welcome/stories-section";
 import { Footer } from "@/components/welcome/footer";
+import { SectionTracker } from "@/components/welcome/section-tracker";
 
 export const revalidate = 3600;
 
@@ -151,6 +152,7 @@ export default async function WelcomePage() {
       />
       <PublicNavbar />
       <main>
+        <SectionTracker />
         <HeroSection />
         <FeaturesSection />
         <ModalitiesSection />
